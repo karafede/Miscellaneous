@@ -1,0 +1,422 @@
+---
+title: "Test for ILC report template"
+author: "maurizio"
+date: "10/07/2019"
+output: word_document
+---
+
+
+```{r, echo = FALSE, warning = FALSE, cache = FALSE, out.width = "70%", results = 'asis', message = FALSE, comment=FALSE, include=FALSE}
+
+library(readxl)
+library(dplyr)
+library(lubridate)
+library(tidyr)
+library(readr)
+library(stringr)
+library(tools)
+library(ggplot2)
+library(ggpmisc)
+library(xtable)
+library(pander)
+library(formattable)
+library(rmarkdown)
+library(knitr)
+library(kableExtra)
+library(forcats)
+library(bookdown)
+library(ggrepel)
+library(httr)
+library(scales)
+library(RODBC)
+library(mosaic)
+library(mosaicData)
+library(shiny)
+library(odbc)
+library(DBI)
+library(flextable)
+library(officer)
+library(gridExtra)
+library(RGraphics) 
+library(requireR)
+library(captioner)
+
+
+
+```
+
+
+equation 1
+$$z'-scores = \frac {x_i - X}{\sqrt {{\sigma}_{p}^2+u_X^2}}=\frac {x_i - X}{\sqrt {({a}\times X+b)^2+u_X^2}}$$
+
+equation 2
+$$En-score = \frac {x_i - X}{\sqrt {{U}_{xi}^2+U_x^2}}$$
+
+equation 3
+$$\alpha=\frac{[NO_2]_i - [NO_2]_i,_l}{[NO]_i - [NO]_{i,l}}\times 100\%$$
+equation 4
+
+$$\frac{|x^*- X|}{\sqrt {\frac {{1.25 \times s^*)^2}}{p}+{u_x^2}}}<2$$
+equazione 5
+$$u_X{'}={u^2_X + (X \times u _{homogeneity})^2}$$
+
+
+equazione 6 repeatibility
+$$r=t_{95\%\nu} \sqrt2 S_r$$
+
+
+equazione 7 reproducibility
+$$R=t_{95\%\nu} \sqrt2 S_R$$
+```{r fig2, fig.height=16, fig.width=12, echo = FALSE, warning = FALSE, cache = FALSE, out.width = "70%", results = 'asis', message = FALSE, comment=FALSE}
+
+## Create a connection with the Data Base
+InterDB.path <- file.path("E:\\BKUP\\Desktop\\LCE_Template.GAS-PHASE.accdb")
+# InterDB.path <- file.choose()
+# "E:\\BKUP\\Desktop\\LCE_Template.GAS-PHASE.accdb"
+
+InterDB <- RODBC::odbcConnectAccess2007(InterDB.path)
+ ## Import the table/query
+# qry <- “SELECT * FROM `ISO 13528(7_6)_z$`”
+ # assigned values <- sqlQuery(con, qry)
+ # str("code", "parameter", "z")
+
+# Loading query
+ISO13528_7_6_z.df <- sqlFetch(InterDB, "ISO 13528 (7_6)_z")[,c("code", "parameter", "z","run", "run (1-j-q)", "z_2+", "z_2-", "z_3+", "z_3-")]
+
+# disconnect
+close(InterDB)
+
+Tick.X <- ISO13528_7_6_z.df[order(ISO13528_7_6_z.df$code),"run (1-j-q)"]
+fig2 <- ggplot(ISO13528_7_6_z.df, aes(x = run, y = z, fill = parameter)) + 
+  geom_bar(colour= "black", stat = "identity")  + 
+  labs(title = "", x = "", y = "") +
+  scale_x_discrete(labels = Tick.X) +
+  geom_hline(aes(yintercept = ISO13528_7_6_z.df$`z_2+`),  col = "blue", lty = 1) +
+  geom_hline(aes(yintercept = ISO13528_7_6_z.df$`z_3+`),  col = "red"  , lty = 1) +
+  geom_hline(aes(yintercept = ISO13528_7_6_z.df$`z_2-`),  col = "blue", lty = 1) +
+  geom_hline(aes(yintercept = ISO13528_7_6_z.df$`z_3-`),  col = "red"  , lty = 1) +
+  facet_wrap(~ code, ncol = 2, scales = 'free_y') + 
+  labs(title = "", x = "", y = "z-score") 
+
+fig2
+
+
+for (i in unique(ISO13528_7_6_z.df$code)) {
+  
+  fig <- ggplot(ISO13528_7_6_z.df %>% 
+                  filter(code == i), 
+                aes(x = run, y = z, fill = parameter)) + 
+  geom_bar(colour= "black", stat = "identity")  + 
+  labs(title = "", x = "", y = "") +
+    ## Change range of Y axis
+  scale_y_continuous(limit = c(+4, -4)) +
+  scale_x_discrete(labels = Tick.X) +
+  geom_hline(yintercept = 2,  col = "blue", lty = 1) +
+  geom_hline(yintercept = 3,  col = "red" , lty = 1) +
+  geom_hline(yintercept = -2,  col = "blue", lty = 1) +
+  geom_hline(yintercept = -3,  col = "red" , lty = 1) + 
+  labs(title = "", x = "", y = "z-score") 
+
+fig
+  
+}
+
+```
+
+
+
+
+
+
+
+```{r, fig.height=16, fig.width=12, echo = FALSE, warning = FALSE, cache = FALSE, out.width = "70%", results = 'asis', message = FALSE, comment=FALSE}
+
+
+## Create a connection with the Data Base
+InterDB.path <- file.path("E:\\BKUP\\Desktop\\LCE_Template.GAS-PHASE.accdb")
+# InterDB.path <- file.choose()
+# "E:\\BKUP\\Desktop\\LCE_Template.GAS-PHASE.accdb"
+InterDB <- RODBC::odbcConnectAccess2007(InterDB.path, uid = "", pwd = "")
+
+ ## Import the table/query
+
+Measured_Data.df <- sqlFetch(InterDB, "Measured Data")[,c("yijk", "lab (1-i-p)", "run (1-j-q)", "step", "parameter", "unit")]
+names(Measured_Data.df)[names(Measured_Data.df) == "lab (1-i-p)"] <- 'acronim'
+Participants.df <- sqlFetch(InterDB, "labs")[,c("acronim", "full_name", "country_name", "code")]
+Participants.df <- as.data.frame(Participants.df)
+Uncertainty.df <- sqlFetch(InterDB, "uncertainties")[,c("lab", "u_yij", "Uyij", "run", "step", "parameter")]
+colnames(Uncertainty.df)[colnames(Uncertainty.df) == 'lab'] <- 'acronim'
+Assigned_value.df <- sqlFetch(InterDB, "Assigned values")[,c("yref,j", "Uyrefj",  "step", "parameter", "_x*", "_s*", "lab (1-i-p)")]
+names(Assigned_value.df)[names(Assigned_value.df) == "lab (1-i-p)"] <- 'acronim'
+
+Measured_Data.df <- Measured_Data.df %>%
+  left_join(Participants.df, by = "acronim")
+Measured_Data.df <- Measured_Data.df %>%
+  left_join(Uncertainty.df, by = c("acronim", "parameter", "step"))
+
+Measured_Data.df <- Measured_Data.df %>%
+  left_join(Assigned_value.df, by = c("acronim", "parameter", "step"))
+
+# disconnect
+close(InterDB)
+
+Measured_Data.df$`run (1-j-q)` <- as.factor(Measured_Data.df$`run (1-j-q)`)
+
+fig.nb <- 0
+
+for (i in unique(Measured_Data.df$parameter)) {
+  for (j in unique((Measured_Data.df[Measured_Data.df$parameter == i , ])$`run (1-j-q)`)) {
+    
+  # Caption
+  fig.nb <- fig.nb + 1
+  Caption <-  paste0("Figure ", fig.nb,":  Reported values")
+  print(Caption, quote = F)
+  
+  filtered_data <- Measured_Data.df %>% 
+    filter(`run (1-j-q)` == j,
+           parameter == i) %>%
+    group_by(code,
+           parameter,
+           `run (1-j-q)`) %>%
+  summarise(mean_yijk = round(mean(yijk, na.rm = T),digits = 2),
+            mean_Uyij = round(mean(Uyij, na.rm = T),digits = 2),
+            ref  = round(mean(`yref,j`, na.rm = T),digits = 2),
+            unit_yijk = unique(unit))
+
+  
+  fig <- ggplot(filtered_data , aes(x="", y = mean_yijk, fill=code)) + 
+  theme_bw() +
+   geom_point()  +
+   geom_errorbar(filtered_data, mapping = aes(x="", ymin = mean_yijk-mean_Uyij , ymax=mean_yijk+mean_Uyij),
+                 na.rm=TRUE, position="dodge", width=0.5, size=0.5,) +
+  labs(title = paste0("parameter ", i, "; conc level: ", j), x = "", y = paste0(i," ", unique(filtered_data$unit_yijk))) +
+  facet_grid(. ~ filtered_data$code) +
+  geom_text_repel( aes(label = filtered_data$mean_yijk), size = 3, show.legend = FALSE) +
+  geom_hline(aes(yintercept = filtered_data[filtered_data$code == "G" , ]$ref ),  col = "red", lty = 1) +
+
+      # no legend
+  guides(fill=FALSE) +   
+  theme(plot.title = element_text(lineheight=.8, face="bold", size = 15, hjust = 0.5)) 
+  print(fig)
+  
+  }
+}
+
+
+ # replace NA with "nr"
+ Table[is.na(Table$yijk),  "yijk"] <- "nr"
+
+
+
+
+```
+
+
+
+
+
+
+
+```{r}
+
+  Table.nb <- 0
+
+for (i in unique(Measured_Data.df$parameter)) {
+  for (j in unique((Measured_Data.df[Measured_Data.df$parameter == i , ])$`run (1-j-q)`)) {
+    
+  # Caption
+  Table.nb <- fig.nb + 1
+  Caption <-  paste0("Table ", Table.nb,":  Reported values")
+  print(Caption, quote = F)
+  
+ Table <- Measured_Data.df %>% 
+    filter(`run (1-j-q)` == j,
+           parameter == i) %>%
+   select(code,
+          yijk) 
+ 
+  # replace NA with "nr"
+ Table[is.na(Table$yijk),  "yijk"] <- "nr"
+ 
+ Table$ID <- seq(1:nrow(Table))
+
+ Table <- as.data.frame(Table)
+Table <- spread(Table, code , yijk)
+
+
+
+# collapse all rows and remove NAs
+collapse_column <- function(data, col){
+  data[!is.na(data[,col]),col]
+}
+
+vals_yijk = sapply(2:ncol(Table) ,collapse_column, data=Table)
+if (!is.null(nrow(vals_yijk))) {
+  vals_yijk <- as.data.frame(vals_yijk)
+} else if (is.null(nrow(vals_yijk)))  {
+vals_yijk <- as.data.frame(t(vals_yijk))
+}# rename with code names
+names(vals_yijk) = names(Table[-1])
+
+ 
+if (nrow(vals_yijk) > 1) {
+  stats <- Measured_Data.df %>% 
+    filter(`run (1-j-q)` == j,
+           parameter == i) %>%
+   select(code,
+          yijk,
+          Uyij,
+          u_yij) %>%
+   group_by(code) %>%
+   summarise(mean_yijk = round(mean(yijk,na.rm = T),digits = 2),
+             mean_sd   = round(sd(yijk,na.rm = T),digits = 2),
+             Uyij      = round(mean(Uyij,na.rm = T),digits = 2),
+             u_yij     = round(mean(u_yij,na.rm = T),digits = 2))
+
+  
+  stats <- t(stats) 
+  stats <- as.data.frame(stats)
+colnames(stats) <- as.character(unlist(stats[1,]))
+# remove header (code name)
+stats = stats[-1, ]
+rownames(stats) <- NULL
+
+Table <- rbind(vals_yijk,
+               stats)
+row.names(Table) <- c("xi, 1", "xi, 2", "xi, 3", "x_mean", "sd", "u(xi)", "U(xi)")
+values <- rownames(Table)
+rownames(Table) <- NULL
+Table <- cbind(values,Table)
+
+
+
+} else if (nrow(vals_yijk) == 1) {
+  stats <- Measured_Data.df %>% 
+    filter(`run (1-j-q)` == j,
+           parameter == i) %>%
+   select(code,
+          yijk,
+          Uyij,
+          u_yij) %>%
+   group_by(code) %>%
+   summarise(Uyij      = round(mean(Uyij,na.rm = T),digits = 2),
+             u_yij     = round(mean(u_yij,na.rm = T),digits = 2))
+
+  
+stats <- t(stats) 
+stats <- as.data.frame(stats)
+colnames(stats) <- as.character(unlist(stats[1,]))
+# remove header (code name)
+stats = stats[-1, ]
+rownames(stats) <- NULL
+
+Table <- rbind(vals_yijk,
+               stats)
+row.names(Table) <- c("xi, 1", "u(xi)", "U(xi)")
+values <- rownames(Table)
+rownames(Table) <- NULL
+Table <- cbind(values,Table)
+
+}
+
+pander(Table)
+
+}}
+
+```
+
+
+
+
+
+
+
+
+
+```{r}
+## aggiungere tabella a chart
+
+##=========================================================
+# char1  <-   melt(chartjunk, id.vars = c("xx"))
+# g1 <-  ggplot(char1,  aes(xx, value, colour = variable )) + 
+#              geom_line() + geom_g1  point() 
+# g2 <- tableGrob(chartjunk)
+# 
+# grid.arrange(g1, g2, ncol=2)
+```
+
+
+
+ 4.1 Participants
+
+```{r, echo = FALSE, warning = FALSE, cache = FALSE, results = 'asis', message = FALSE, comment=FALSE}
+
+# function for caption
+
+tab <- captioner::captioner(prefix ="Table")
+figs <- captioner::captioner (prefix = "Figure")
+
+# DB reading
+InterDB.path <- file.path("E:\\BKUP\\Desktop\\LCE_Template.GAS-PHASE.accdb")
+# InterDB.path <- file.choose()
+InterDB <- RODBC::odbcConnectAccess2007(InterDB.path, uid = "", pwd = "")
+## Import the table/query
+Participants.df <- sqlFetch(InterDB, "labs")[,c("acronim", "full_name", "country_name", "code")]
+Participants.df <- as.data.frame(Participants.df)
+# disconnect
+close(InterDB)
+
+tab(name="Participant", "List of participating organizations")
+
+# `Table 1` <- Participants.df
+
+# `Table 1_cap` <- table_nums(name = "Table 1",
+                       # caption = "List of participating organizations")
+
+```
+
+
+All participants were organisations dealing with the routine ambient air monitoring or institutions involved in environmental or public health protection. The national representatives came from `r Participants.df$country_name `.
+
+
+
+
+```{r, echo = FALSE, warning = FALSE, cache = FALSE, out.width = "80%", results = 'asis', message = FALSE, comment=FALSE}
+
+ft <- regulartable(Participants.df)
+ft <- theme_vanilla(ft)
+ft <- color(ft, color = "blue", part = "header")
+ft <- width(ft, width = .85) # set width of all columns to .75 in
+ft <- fontsize(ft, part = "body", size = 10)
+ft <- fontsize(ft, part = "header", size = 12)
+ft <- autofit(ft)
+ft
+
+
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
