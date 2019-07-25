@@ -1,0 +1,969 @@
+%%
+% Summary:
+% 	Document style for the composition of JRC Conference and Workshop reports in Latex
+%
+% History:
+% 	Dec 01/12 - Document created by Daniele Borio
+%		Jan 03/14 - Document updated by Daniele Borio
+%	  Oct 10/14 - Document updated by Daniele Borio
+%   Feb 12/16 - Document updated by Daniele Borio
+%		May 23/16 - Document updated by Daniele Borio - new page order, new mission
+%		Oct 27/17	- Document updated according to the new word template 
+%	  Nov 10/17 - Template adapted for the 'Science for Policy' document type
+%   Aug 01/18 - Template updated - limited/EU RESTRICTED, copyright info, last two pages
+%		Aug 02/18 - Template adapted for the Technical report
+%
+% Remark:
+%	This style document has been created on the basis of the TOPTESI style
+%	from Claudio Beccari and adapted to the JRC corporate style
+
+\usepackage{color}
+\usepackage{graphicx}
+\usepackage{rotating}
+
+% The Verdana font is used for the document
+\usepackage[T1]{fontenc}
+\usepackage{verdana}
+
+\usepackage{setspace}
+\usepackage{tocloft}
+\usepackage{textcomp}
+
+% modify this variable if the package is place in a different path
+\def\@path{style}
+
+% Avoid to include this file twice
+\ifx\JrcIPSCvers\undefined
+\else\expandafter\endinput
+\fi
+
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{JrcTechnicalReports}[2018/08/02]%
+\def\JrcTemplateVers{1} 
+\def\JrcDate{Aug 2018}
+
+%
+% The size of the document is set to fully use the space of
+% a UNI A4 paper
+%
+\textheight 255mm
+\divide\textheight by \baselineskip
+\multiply\textheight by \baselineskip
+\advance\textheight by \topskip
+%
+\textwidth=160mm
+
+\oddsidemargin=210mm
+\advance\oddsidemargin -\textwidth
+\divide\oddsidemargin \tw@
+\advance\oddsidemargin -1in
+\evensidemargin=\oddsidemargin
+
+\addtolength{\topmargin}{-25mm}
+
+%
+\if@twoside
+ \typeout{Messaggio Toptesi: Ricalcolo i margini}
+ \advance\oddsidemargin 7mm
+ \advance\evensidemargin -7mm
+\fi
+%
+\def\@title{}
+\def\@authors{}
+\def\@subtitle{}
+
+\def\@onelinetitle{}
+\def\onelinetitle#1{\gdef\@onelinetitle{#1}}
+
+% This convention has been used to avoid to 
+% redefine the command \year used in other packages
+\def\@jrcyear{}
+\def\jrcyear#1{\gdef\@jrcyear{#1}}
+
+% Command used to set the title
+\def\subtitle#1{\gdef\@title{#1}}
+
+% Command used to set the subtitle
+\def\subtitle#1{\gdef\@subtitle{#1}}
+
+% Command used to set the authors
+\def\authors#1{\gdef\@authors{#1}}
+
+\def\@authorswithaffiliations{}
+\def\authorswithaffiliations#1{\gdef\@authorswithaffiliations{#1}}
+
+\newdimen\mainFigureWidth
+\mainFigureWidth = \paperwidth
+
+\newdimen\mainFigureHeight
+\mainFigureHeight = 9.1cm
+
+\newdimen\mainFigureDisp
+\mainFigureDisp = \paperwidth
+
+\newcommand{\frontFig}[2][9.1cm]
+{
+	\mainFigureHeight = #1
+	\gdef\@mainFigure{#2}
+}
+
+\newcommand{\FrontFigure}[1][\paperwidth]{
+	\mainFigureWidth = #1 
+	\advance\mainFigureDisp by-\mainFigureWidth
+	\divide\mainFigureDisp by2
+	\advance\mainFigureDisp by-74pt
+	\frontFig
+}
+
+% The main figure to be inserted
+\def\@mainFigure{FrontFigure}
+
+
+
+\def\gr@phicswrn{\ifx\includegraphics\undefined
+    \PackageWarning{JrcJrcScientificInformationSystems}{%
+    The graphicx package is required \MessageBreak
+    to insert the JRC technical note banner
+    }%
+    \let\includegraphics\d@mmyincludegr
+\fi}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  													Some useful macro                      %  
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\newcommand{\removelinebreaks}[1]{%
+  \begingroup\def\\{ }#1\endgroup}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 					Define a variable for the limited distribution         %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\newif\iflimiteddistr
+\newif\ifeurestricted
+
+% new if used to tell that the identifiers should not be printed
+% this happens then either is limited distribution or eurestricted
+\newif\ifnoid
+
+\def\limiteddistribution{
+	\limiteddistrtrue
+	\noidtrue
+}
+
+\def\eurestricted{
+	\eurestrictedtrue
+	\noidtrue
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%   Define a variable to specify that the report will be printed    %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newif\ifprinted
+
+\def\IsPrinted{
+	\printedtrue
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 			Define a variable to change the color of the report code    %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newif\ifwhitecode
+
+\def\useWhiteCode{
+	\whitecodetrue
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%				Define macro for the publication place                      %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\def\@jrcsite{}
+\def\jrcsite#1{\gdef\@jrcsite{#1}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% ADD WHITE PAGE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\def\WhitePage#1{
+	\begingroup
+		\thispagestyle{empty}
+		\ifx #1\empty
+			\mbox{}
+			\vfill
+		\else
+			\begin{picture}(0, 0)	
+				\put(-40, -320)
+				{
+					% Insert notice
+					\parbox{18cm}{
+						{\centering
+						\subtitlefont
+						\color{LightGray} \baselineskip=32pt \expandafter{#1\par}
+						}
+					}
+				}
+			\end{picture}	
+		\fi	
+		\newpage
+	\endgroup
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%% Indicate that there is a single author
+\newif\ifsingleauthor
+
+\def\singleauthor
+{
+	\ifsingleauthortrue
+}
+
+% Blue Colour
+\definecolor{Blue}{rgb}{0.08,0.20,0.49}
+\definecolor{Red}{rgb}{1,0,0}
+\definecolor{Black}{rgb}{0.0, 0.0, 0.0}
+\definecolor{Gray}{rgb}{0.392,0.396,0.404}
+\definecolor{LightGray}{rgb}{0.8,0.8,0.8}
+\definecolor{White}{rgb}{1, 1, 1}
+\definecolor{BlueTitle}{rgb}{0, 0.2, 0.8}
+\definecolor{BoxCol}{rgb}{0.86, 0.933, 0.957}
+\definecolor{PureBlue}{rgb}{0, 0, 1}
+% FONT
+
+\renewcommand{\encodingdefault}{T1}
+\renewcommand{\rmdefault}{vnax} % Arial
+\renewcommand{\sfdefault}{vnax} % Arial
+
+%%%%%%%%%%%%% Definition from the 'verdana' style
+% vnaxmn8t  Verdana <verdana.ttf  <T1-WGL4.enc
+% vnaxmit8t VerdanaItalic <verdanai.ttf <T1-WGL4.enc
+% vnaxbn8t  VerdanaBold <verdanab.ttf <T1-WGL4.enc
+%vnaxbit8t VerdanaBoldItalic <verdanaz.ttf <T1-WGL4.enc
+
+\newfont{\titlefont}{vnaxmn8t at 28pt}
+\newfont{\specfont}{vnaxbn8t at 12pt}
+\newfont{\subtitlefont}{vnaxmit8t at 16pt}
+\newfont{\lmfont}{vnaxbn8t at 10pt}
+\newfont{\authorfont}{vnaxmn8t at 10pt}
+\newfont{\backfont}{vnaxbn8t at 8pt}
+\newfont{\smallnotice}{vnaxmn8t at 8pt}
+\newfont{\smallnoticebd}{vnaxbn8t at 8pt}
+\newfont{\smallnoticeit}{vnaxmit8t at 8pt}
+\newfont{\regularfont}{vnaxmn8t at 10pt}
+\newfont{\yearfont}{vnaxmn8t at 10pt}
+\newfont{\codefont}{vnaxmn8t at 9pt}
+\newfont{\secfont}{vnaxbn8t at 13pt}
+\newfont{\sssecfont}{vnaxbn8t at 11pt}
+\newfont{\labfont}{vnaxbn8t at 9pt}
+
+% \usepackage{./style/sfmath}
+
+\def\d@mmyincludegr[#1]#2{}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%												Definition of the front page											%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%% Set thge fonts
+
+\def\frontpage{
+\begingroup
+
+			\thispagestyle{empty}
+
+			\begin{picture}(0, 0)	
+				% ADD the EC Banner
+				\put(-90, -130)
+				{
+						\includegraphics[width=\paperwidth]{\@path/EC_banner.pdf}
+				}%
+%
+				\put(-50, -240)
+				{
+					% insert the title set with \title
+    			\parbox{18cm}{
+						\titlefont
+						\color{Black} \baselineskip=32pt \expandafter{\@title\par}
+					}
+				}
+			\end{picture}	
+
+			\vspace{11cm}
+			% with eventually the subtitle
+      \ifx\@subtitle\empty 
+				\vfill
+			\else
+            \begin{flushright}%
+              { 
+							\parbox{7.3cm}{
+								\subtitlefont
+								\color{Gray} \baselineskip=1.2em \expandafter{\@subtitle \par}
+							}
+							}
+            \end{flushright}%
+      \fi
+			
+\vspace{-2cm}
+				
+% Insert the authors
+		\ifx\@authors\empty \else
+		\begin{flushright}%
+				{ 
+				\parbox[h][2cm][b]{7.3cm}{
+				\authorfont
+				\color{Black} \expandafter{\@authors \par}
+				}
+				}
+		\end{flushright}
+		\fi
+
+% if in limited distribution, add the disclaimer
+	\iflimiteddistr
+		\vspace{.5cm}
+	          \begin{flushright}%
+              { 
+							\parbox{7.3cm}{
+								\lmfont
+								\baselineskip=1.4em \expandafter{Limited\par}
+							}
+							}
+            \end{flushright}%
+						\vspace{-1.5cm}
+	\fi
+	
+% if in EU restricted, add the disclaimer
+	\ifeurestricted
+		\vspace{.5cm}
+	          \begin{flushright}%
+              { 
+							\parbox{7.3cm}{
+								\lmfont
+								\baselineskip=1.4em \expandafter{EU RESTRICTED\par}
+							}
+							}
+            \end{flushright}%
+						\vspace{-1.5cm}
+	\fi
+		
+\vspace{1cm}
+% Insert the year
+		\ifx\@jrcyear\empty \else
+		\begin{flushright}%
+				{ 
+				\parbox[h][1cm][b]{7.3cm}{
+				\yearfont
+				\color{Black}
+				\expandafter{\@jrcyear \par}
+				}
+				}
+		\end{flushright}
+		\fi
+\vspace{1cm}		
+\vfill	
+%
+%%
+% ADD THE MAIN FIGURE
+% Insert the main figure
+	\ifx \@mainFigure \empty \else
+	\begin{picture}(0, 0)
+	{
+		\put(\strip@pt\mainFigureDisp, -73)
+		{
+			\includegraphics[width =\mainFigureWidth, height =\mainFigureHeight]{\@path/\@mainFigure}
+		}
+		\put(415, -40)
+		{
+			\ifnoid
+			\else
+				\ifx \@eur \empty \else
+					{ \parbox{3cm}{
+						\begin{flushright}
+							\setstretch{0.7}
+						\codefont
+						\ifwhitecode
+							\color{White}
+						\else
+							\color{Black} 
+						\fi
+						{EUR \@eur}
+						\end{flushright}	
+					}}
+				\fi
+			\fi	
+		}
+	}
+	\end{picture}		
+	\fi
+%%	
+	
+%	
+	
+% Insert the bottom banner
+			\begin{picture}(0, 0)	
+ %     \def\ps@myheadings{
+			\put(-80, -60)
+			{
+				\includegraphics[width = \paperwidth]{\@path/BottomRibbon}
+			}			
+			\end{picture}	
+			
+% End of the front-page
+\newpage
+\endgroup}
+
+% Additional commands %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% this is for Dir. G that have to attribute the copyright to the European Atomic Energy Community
+\def\@atomic{}
+\def\dirG{\gdef\@atomic{1}} 
+
+% WITH PUBLISHER - This is a dummy variable used to dermine if Publisher details should
+% be included in the final document
+\def\@pubinfo{}
+
+% CONTACT
+\def\@contact{}
+\def\contact#1{\gdef\@contact{#1}}
+
+% WEBSITE
+\def\@website{}
+\def\website#1{\gdef\@website{#1}}
+
+% ADDRESS
+\def\@ddress{Joint Research Centre, Via Enrico Fermi 2749, 21027 Ispra (VA), Italy}
+\def\address#1{\gdef\@ddress{#1}}
+
+% EMAIL
+\def\@email{}
+\def\email#1{\gdef\@email{#1}}
+
+% TELEPHONE
+\def\@tel{}
+\def\tel#1{\gdef\@tel{#1}}
+
+% FAX
+\def\@fax{}
+\def\fax#1{\gdef\@fax{#1}}
+
+% PUBSY NUMBER
+\def\@pubsy{}
+\def\pubsy#1{\gdef\@pubsy{#1}}
+
+% EUR NUMBER
+\def\@eur{}
+\def\eur#1{\gdef\@eur{#1}
+					 \gdef\@pubinfo{1}}
+
+% ISBN
+\def\@isbn{}
+\def\isbn#1{\gdef\@isbn{#1}
+						\gdef\@pubinfo{1}}
+
+% ISSN
+\def\@issn{}
+\def\issn#1{\gdef\@issn{#1}
+						\gdef\@pubinfo{1}}
+
+% ISBN PDF
+\def\@isbnpdf{}
+\def\isbnpdf#1{\gdef\@isbnpdf{#1}
+							 \gdef\@pubinfo{1}}
+
+% ISSNPDF
+\def\@issnpdf{}
+\def\issnpdf#1{\gdef\@issnpdf{#1}
+							 \gdef\@pubinfo{1}}
+
+% DOI
+\def\@doi{}
+\def\doi#1{\gdef\@doi{#1}
+					 \gdef\@pubinfo{1}}
+
+% DOIPDF
+\def\@doipdf{}
+\def\doipdf#1{\gdef\@doipdf{#1}
+							\gdef\@pubinfo{1}}
+
+% COUNTRY
+\def\@country{}
+\def\country#1{\gdef\@country{#1}}
+
+% LIST of photo credits list
+\def\@imageEx{}
+\def\imageEx#1{\gdef\@imageEx{#1}}
+
+% HOW TO CITE
+\def\@howtocite{}
+\def\howtocite#1{\gdef\@howtocite{#1}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% CATALOG NUMBER
+\def\@catalogue{}
+\def\catalogue#1{\gdef\@catalogue{#1}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% END ADDITIONAL COMMANDS %%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% This is the second page %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\def\noticePage{
+\begingroup
+\thispagestyle{empty}
+
+% Everything is in a parbox
+\begin{picture}(0, 0)
+	\put(-40, 0 )
+	{
+		{\setstretch{0.8}
+		\parbox[t]{16cm}{
+		\noindent {\smallnotice This publication is a Technical report by the Joint Research Centre (JRC), the European Commission's science\\
+							 and knowledge service. It aims to provide evidence-based scientific support to the European policymaking\\
+							 process. The scientific output expressed does not imply a policy position of the European Commission. Neither\\
+							 the European Commission nor any person acting on behalf of the Commission is responsible for the use that\\
+							 might be made of this publication.}\\
+							~\\
+		\ifx \@contact \empty
+			% There is no contact name, then this part is removed
+			\vfill
+		\else
+		\noindent{\smallnoticebd Contact Information}\\
+		{\smallnotice 
+		\noindent Name: \@contact \\
+		\noindent Address: \@ddress\\
+		\noindent E-mail: \@email\\
+		\noindent Tel.: \@tel
+		}\\
+		
+		\noindent{\smallnoticebd EU Science Hub}\\
+		{\smallnotice https://ec.europa.eu/jrc }
+		\\~\\		% skip two lines
+		
+		{\smallnotice
+		\ifx \@pubsy \empty ~\\	% skip another line 
+		\else
+		\noindent JRC\@pubsy\\
+		\fi
+		
+		\ifnoid
+		\else
+			\ifx \@pubinfo \empty ~\\
+			\else
+				\ifx \@eur \empty ~\\
+					\else
+					\noindent EUR \@eur \\
+				\fi	
+				% Add two lines
+				~\\
+				~\\
+				\ifprinted	% Different options depending if the document is printed or online
+					\noindent	\hspace*{2mm} Print \hspace{7mm} \ifx \@isbn \empty \else ISBN \@isbn \fi
+																			\hspace{6mm} \ifx \@issn \empty \else ISSN \@issn \fi
+																			\hspace{6mm} \ifx \@doi \empty \else doi:\@doi \fi \\
+				% \noindent \rule{13cm}{0.4pt}\\
+					\noindent~\\
+					\noindent	\hspace*{2mm} PDF \hspace{8mm} \ifx \@isbnpdf \empty \else ISBN \@isbnpdf \fi
+																		\hspace{6mm} \ifx \@issnpdf \empty \else ISSN \@issnpdf \fi
+																		\hspace{6mm} \ifx \@doipdf \empty \else doi:\@doipdf \fi \\
+				\else % ONLINE option
+					\noindent	\hspace*{2mm} PDF \hspace{8mm} \ifx \@isbnpdf \empty \else ISBN \@isbnpdf \fi
+																		\hspace{6mm} \ifx \@issnpdf \empty \else ISSN \@issnpdf \fi
+																		\hspace{6mm} \ifx \@doipdf \empty \else doi:\@doipdf \fi \\
+					% \noindent \rule{13cm}{0.4pt}\\
+					\noindent~\\
+					\noindent	\hspace*{2mm} Print \hspace{7mm} \ifx \@isbn \empty \else ISBN \@isbn \fi
+																			\hspace{6mm} \ifx \@issn \empty \else ISSN \@issn \fi
+																			\hspace{6mm} \ifx \@doi \empty \else doi:\@doi \fi \\
+				\fi % end if on IsPrinted	
+			\fi	% end if on PUB INFO
+			%
+			~\\~\\
+			%
+			% Add notice depending on the site
+			\ifx \@pubinfo \empty
+				\ifnum\pdf@strcmp{\@jrcsite}{ispra} = 0
+					Ispra: European Commission, \@jrcyear
+			\fi
+			\ifnum\pdf@strcmp{\@jrcsite}{brussels} = 0
+				Brussels: European Commission, \@jrcyear
+			\fi	
+			\ifnum\pdf@strcmp{\@jrcsite}{geel} = 0
+				Geel: European Commission, \@jrcyear
+			\fi	
+			\ifnum\pdf@strcmp{\@jrcsite}{karlsruhe} = 0
+				Karlsruhe: European Commission, \@jrcyear
+			\fi
+			\ifnum\pdf@strcmp{\@jrcsite}{petten} = 0
+				Petten: European Commission, \@jrcyear
+			\fi
+			\ifnum\pdf@strcmp{\@jrcsite}{seville} = 0
+				Seville: European Commission, \@jrcyear
+			\fi
+			\else
+				Luxembourg: Publications Office of the European Union, \@jrcyear
+			\fi
+			~\\ ~\\
+		
+			\ifx \@atomic \empty
+				\noindent {\footnotesize \textcopyright} European Union, \@jrcyear\\
+			\else
+				\noindent {\footnotesize \textcopyright} European Atomic Energy Community, \@jrcyear\\
+			\fi
+		
+			\noindent The reuse policy of the European Commission is implemented by Commission Decision 2011/833/EU of 12\\
+			December 2011 on the reuse of Commission documents (OJ L 330, 14.12.2011, p. 39). Reuse is authorised,\\ 
+			provided the source of the document is acknowledged and its original meaning or message is not distorted. The\\ 
+			European Commission shall not be liable for any consequence stemming from the reuse. For any use or\\ 
+			reproduction of photos or other material that is not owned by the EU, permission must be sought directly from\\ 
+			the copyright holders.\\
+			~\\
+			All content 
+			\ifx \@atomic \empty
+					{\footnotesize \textcopyright} European Union, \@jrcyear
+			\else
+					{\footnotesize \textcopyright} European Atomic Energy Community, \@jrcyear
+			\fi
+			\ifx \@imageEx \empty \else
+				, except: \@imageEx\\
+			\fi
+		\fi	% end if no identifiers	
+		~\\
+				
+		\noindent How to cite this report: 
+		\ifx \@howtocite \empty
+			\ifx \@authors \empty \else \@authors; \fi	% add the authors
+			\ifx \@title \empty \else \@title; \fi% add the title
+			\ifx \@eur \empty \else EUR \@eur; \fi% add the EUR
+			\ifx \@doi \empty \else doi:\@doi \fi% add the doi
+		\else
+			\@howtocite
+		\fi
+		~\\
+		~\\
+		~\\
+		% Add printed notice if the document will be printed
+		\ifprinted
+		{
+		\smallnoticeit Printed in \@country}
+		\fi
+
+		}
+		}	% end parbox
+		}
+}
+\end{picture}
+
+\newpage
+\endgroup}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% END SECOND PAGE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%														Distribution List 																		%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Command to add elements in the list
+\usepackage{etoolbox}
+
+\newcounter{cnt}
+
+\newcommand\namelist{}			% list of names
+\newcommand\afflist{}   		% affiliation list
+\newcommand\ncopieslist{} 	% number of copies
+
+\newcommand\addlistelement[3]{
+	\stepcounter{cnt}
+	\csdef{name\thecnt}{#1}
+	\csdef{aff\thecnt}{#2}
+	\csdef{ncopies\thecnt}{#3}
+}
+	
+\newcommand\getname[1]{\noindent\ignorespaces\csuse{name#1}\noindent\ignorespacesafterend}
+
+\newcommand\getaff[1]{\noindent\ignorespaces\csuse{aff#1}\noindent\ignorespacesafterend}
+
+\newcommand\getncopies[1]{\noindent\ignorespaces\csuse{ncopies#1}\noindent\ignorespacesafterend}
+
+\usepackage{array}
+\newcolumntype{H}{>{\setbox0=\hbox\bgroup}c<{\egroup}@{}}
+
+
+% Now generate the table
+\def\DistributionList{
+\begingroup
+\thispagestyle{empty}
+\parbox[t][26cm][b]{15cm}{
+% Everything is in a parbox
+\secfont\color{Black}{Distribution List}
+\vspace{10mm}
+\normalsize
+		\begin{center}
+			\centering
+					
+					\begin{tabular}{Hc|c|c|}\hline \hline
+					&\hspace{-2mm}\vline\parbox{5cm}{\centering \textbf{Name}} & \parbox{6cm}{\centering \textbf{Affiliation}} & \parbox{3cm}{\centering \textbf{No. of Copies}} \\ \hline \hline					
+					% Now use a counter to add rows corresponding to the elements of the list
+          \newcounter{rownum}%
+          \setcounter{rownum}{0}
+					
+          \whileboolexpr{ test {\ifnumcomp{\value{rownum}}{<}{\thecnt}} }%
+          {%
+					\stepcounter{rownum}
+					&\hspace{-2mm}\vline\parbox{5cm}{\centering\getname{\therownum}}\ & \getaff{\therownum}\ & \getncopies{\therownum}\ \\ \hline
+					}
+					
+					\end{tabular}
+		\end{center}
+		
+		\vfill
+		\newpage}
+\endgroup}	% end distribution list
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% END DISTRIBUTION LIST %%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%														The Last Two Pages																		%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\def\LastPages{
+\newpage
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%																	Second last page                                 %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% This page is present only if the the EUR is available
+\ifx \@pubinfo \empty
+	% do not add this page
+\else
+	\begingroup
+		\thispagestyle{empty}
+		\pagestyle{empty}
+
+		\begin{picture}(0, 0)	
+				\put(-90, -778)
+				{
+					\includegraphics[width =1.0\paperwidth]{\@path/secondlastpage.pdf}
+				}%
+		\end{picture}
+	\endgroup
+\fi
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%																	  Very last page                                 %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newpage
+\begingroup
+\thispagestyle{empty}
+\pagestyle{empty}
+
+% Background page
+\begin{picture}(0, 0)	
+			\put(-90, -778)
+			{
+				\includegraphics[width =1.0\paperwidth]{\@path/BackPage.pdf}
+			}%
+			\ifnoid \else
+			\put(480, 50)
+			{
+				\begin{rotate}{270}
+					\ifx \@catalogue \empty
+% 					\backfont {\color{White} JRC\@pubsy}
+					\else
+					\smallnotice {\color{White} \@catalogue}
+					\fi
+				\end{rotate}
+			}
+			\ifx \@pubinfo\empty
+			\else
+			\put(-60, -745)
+			{
+				\includegraphics[width=4cm]{\@path/PubOfficeLogo.pdf}
+			}
+			\put(350, -710)
+			{
+				\parbox[t]{4cm}{
+					\begin{flushright}
+							\scriptsize
+							\ifprinted
+								\ifx \@doi \empty \else
+									\noindent doi:\@doi\\
+								\fi
+								%
+								~\\   
+								\ifx \@isbn \empty \else
+									\noindent ISBN \@isbn
+								\fi
+							\else
+								\ifx \@doipdf \empty \else
+									\noindent doi:\@doipdf\\
+								\fi
+								%
+								~\\   
+								\ifx \@isbnpdf \empty \else
+									\noindent ISBN \@isbnpdf
+								\fi
+							\fi
+						\end{flushright}	
+				}
+			}
+			\fi
+			\fi
+			
+\end{picture}
+\endgroup
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%% Sectioning %%%%%%%%%%%%%%%%%%%%
+\setcounter{secnumdepth}{5}
+
+\renewcommand\section{\@startsection{section}{1}{\z@}%
+                                   {-3.5ex \@plus -1ex \@minus -.2ex}%
+                                   {2.3ex \@plus.2ex}%
+                                   {\secfont\color{Black}}}
+
+\renewcommand\part{\@startsection{part}{0}{\z@}%
+                                   {-3.5ex \@plus -1ex \@minus -.2ex}%
+                                   {2.3ex \@plus.2ex}%
+                                   {\specfont\color{Black}}}
+																	
+\renewcommand\subsection{\@startsection{subsection}{2}{\z@}%
+                                     {-3.25ex\@plus -1ex \@minus -.2ex}%
+                                     {1.5ex \@plus .2ex}%
+                                     {\specfont\color{Black}}}
+																		
+\renewcommand\subsubsection{\@startsection{subsubsection}{3}{\z@}%
+                                     {-3.25ex\@plus -1ex \@minus -.2ex}%
+                                     {1.5ex \@plus .2ex}%
+                                     {\sssecfont\color{Black}}}
+
+\renewcommand\paragraph{\@startsection{paragraph}{4}{\z@}%
+                                    {-3.25ex \@plus -1ex \@minus -.2ex}%
+                                    {1.5ex \@plus .2ex}%
+                                    {\regularfont\normalsize\bfseries\color{Black}}}
+
+\renewcommand\subparagraph{\@startsection{subparagraph}{5}{\z@}%
+                                    {-3.25ex \@plus -1ex \@minus -.2ex}%
+                                    {1.5ex \@plus .2ex}%
+                                    {\regularfont\normalsize\color{Black}}}		
+
+% \renewcommand{\@seccntformat}[1]{\csname the#1\endcsname.\quad}
+\renewcommand{\thesection}{\arabic{section}}
+\renewcommand{\p@section}{\arabic{section}\expandafter\@gobble}
+\renewcommand\thesubsection   {\thesection.\@arabic\c@subsection}
+
+\newcommand\specialsec[1]{
+	\phantomsection
+	\addcontentsline{toc}{part}{#1}
+	\part*{#1}
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\newcounter{annexcnt}
+\setcounter{annexcnt}{1}
+\newcommand\annex[1]
+{
+	\phantomsection
+	\addcontentsline{toc}{part}{\quad Annex \arabic{annexcnt}. #1}
+		
+	\renewcommand\part{\@startsection{part}{0}{\z@}%
+                                   {-3.5ex \@plus -1ex \@minus -.2ex}%
+                                   {2.3ex \@plus.2ex}%
+                                   {\lmfont \noindent Annex \arabic{annexcnt}. \color{Black}}}
+	\part*{#1}
+	\addtocounter{annexcnt}{1}														
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%Table of contents%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\setcounter{tocdepth}{5}
+
+\renewcommand{\contentsname}{\noindent \secfont\color{Black}{Contents}}
+%\tocloftpagestyle{empty}
+\AtBeginDocument{\addtocontents{toc}{\protect}} 
+\newdimen\linesp
+\linesp = 0.22cm
+
+% parts
+\setlength\cftbeforepartskip{\linesp}
+\renewcommand{\cftpartleader}{\cftdotfill{.}}
+\renewcommand{\cftpartfont}{\regularfont}
+\renewcommand{\cftpartpagefont}{\regularfont}
+
+% section
+\setlength\cftbeforesecskip{\linesp}
+\renewcommand{\cftsecleader}{\cftdotfill{.}}
+\renewcommand{\cftsecfont}{\regularfont}
+\renewcommand{\cftsecpagefont}{\regularfont}
+
+% subsection
+\setlength\cftbeforesubsecskip{\linesp}
+\renewcommand{\cftsubsecindent}{0.333cm}
+\renewcommand{\cftsubsecleader}{\cftdotfill{.}}
+\renewcommand{\cftsubsecfont}{\regularfont}
+\renewcommand{\cftsubsecpagefont}{\regularfont}
+
+% subsubsection
+\setlength\cftbeforesubsubsecskip{\linesp}
+\renewcommand{\cftsubsubsecindent}{0.667cm}
+\renewcommand{\cftsubsubsecleader}{\cftdotfill{.}}
+\renewcommand{\cftsubsubsecfont}{\regularfont}
+\renewcommand{\cftsubsubsecpagefont}{\regularfont}
+
+% paragraph
+\setlength\cftbeforeparaskip{\linesp}
+\renewcommand{\cftparaindent}{1cm}
+\renewcommand{\cftparaleader}{\cftdotfill{.}}
+\renewcommand{\cftparafont}{\regularfont}
+\renewcommand{\cftparapagefont}{\regularfont}
+
+% subparagraph
+\setlength\cftbeforesubparaskip{\linesp}
+\renewcommand{\cftsubparaindent}{1.333cm}
+\renewcommand{\cftsubparaleader}{\cftdotfill{.}}
+\renewcommand{\cftsubparafont}{\regularfont}
+\renewcommand{\cftsubparapagefont}{\regularfont}
+
+
+\renewcommand{\listfigurename}{\noindent \specfont\color{Black}{List of figures}}
+\renewcommand{\listtablename}{\noindent \specfont\color{Black}{List of tables}}
+\renewcommand{\refname}{\noindent \specfont\color{Black}{References}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% itemize %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\renewcommand{\labelitemii}{$\circ$}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% figures and tables %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage{caption}
+\DeclareCaptionFont{FigFont}{\codefont}
+\DeclareCaptionFont{LabFont}{\color{Black}\labfont}
+\captionsetup{font=FigFont,labelfont=LabFont}
+
+% This block defines the style for the captions in the list of figures
+\newlength{\mylen}
+\setlength{\cftfigindent}{-2mm}
+\renewcommand{\cftfigpresnum}{\color{Black}\labfont\hspace{2mm}\figurename\enspace}
+\renewcommand{\cftfigaftersnum}{.\hspace{-3mm}}
+\settowidth{\mylen}{\cftfigpresnum\cftfigaftersnum}
+\addtolength{\cftfignumwidth}{\mylen}
+
+% This block defines the style for the captions in the list of table
+\setlength{\cfttabindent}{-2mm}
+\renewcommand{\cfttabpresnum}{\color{Black}\labfont\hspace{2mm}\tablename\enspace}
+\renewcommand{\cfttabaftersnum}{.\hspace{-3mm}}
+\settowidth{\mylen}{\cfttabpresnum\cfttabaftersnum}
+\addtolength{\cfttabnumwidth}{\mylen}
+
+
+\usepackage{cite}
+\makeatletter
+\def\@biblabel#1{\hspace{-2mm}}
+\makeatother
+
+\makeatletter
+\def\@cite#1#2{({#1#2})}%
+\makeatother
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\renewcommand\labelitemi{---}
+\renewcommand\labelitemii{$\bullet$}

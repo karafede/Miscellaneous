@@ -1,0 +1,307 @@
+\documentclass[10pt,a4paper]{article}
+
+\usepackage{style/JrcTechnicalReports}
+\usepackage{graphicx}
+\usepackage[pdfborder={0 0 0}]{hyperref}
+\usepackage{placeins}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{acronym}
+
+% this removes the warning from PDFlatex
+\pdfminorversion=6
+\renewcommand{\vec}[1]{\ensuremath{\boldsymbol{#1}}}
+
+
+\title{First main title line\\
+			 second main title line\\
+			 third main title line
+}
+
+\subtitle{First subtitle line\\ 
+					second subtitle line\\ 
+					third subtitle line\\
+}
+
+\onelinetitle{Main title of the report}
+\authors{Surname(s), initial(s)}
+
+% \useWhiteCode
+
+\jrcyear{20XX}
+
+\contact{Forename Surname}
+\address{Joint Research Centre, Via Enrico Fermi 2749, TP xxx, 21027 Ispra (VA), Italy}
+\email{forename.surname@ec.europa.eu}
+\tel{+39 0332 XXXXX}
+\fax{+39 0332 XXXXX}
+
+
+\pubsy{XXXXX}
+
+%%%%%%%%%%%%%%%%% Use this variable to tell that the document will be a printed version
+\IsPrinted
+% otherwise the on-line version will be considered
+
+% Uncomment to have limited distribution or eu restricted
+% \limiteddistribution
+
+% In case you need a distribution list you can use the following command to add elements to the
+% distribution list - Name - Unit/Institution - Number of copies
+% \addlistelement{Daniele Borio}{JRC.E.2}{1}
+% 
+% You will then need to use the command \DistributionList to generate the table
+
+% \eurestricted
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Use this commands to insert international identifiers
+
+\eur{XXXXX XX}
+\isbn{XXX-XX-XX-XXXXX-X}
+\isbnpdf{XXX-XX-XX-XXXXX-X}
+\issn{XXXX-XXXX}
+\issnpdf{XXXX-XXXX}
+\doi{XX.XXXX/XXXXX}
+\doipdf{XX.XXXX/XXXXX}
+
+\catalogue{XX-NA-XXXXX-EN-N} 
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% If no identifiers are provided, the notice on the second page will be updated according to the
+% JRC site - for example, it will appear: Ispra: European Commission, 20XX 
+\jrcsite{ispra}	% other options for \jrcsite are brussels, geel, karlsruhe, petten, seville
+								% if the identifiers are provided, the text "Luxembourg: Publications Office of the European Union" will be used
+\country{Italy}
+
+% For Directorate G - the copyright should be given to the European Atomic Energy Community 
+% If you are from this directorate, uncomment the following command
+% \dirG
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\howtocite{Author(s), Title, EUR (where available), Publisher, Publisher City, Year of Publication, ISBN 978-92-79-XXXXX-X (where available), doi:10.2760/XXXXX (where available), JRCXXXXXX.}
+
+\imageEx{{\color{Red} [page XX, artist's name, image \#], Year. Source: [Fotolia.com] 
+(unless otherwise specified)}}
+
+\FrontFigure{FrontFigure}
+
+%%%%%%%%%%%%%%%%% Constant definition %%%%%%%%%%%%%%%%%%%%%%%%%
+
+% This will (hopefully) minimize the number of changes to be
+% applied at the final document
+\def\fref#1{Figure \ref{#1}}
+\def\tref#1{Table \ref{#1}}
+\def\secref#1{Section \ref{#1}}
+\def\eqref#1{Eq. (\ref{#1})}\def\fref#1{Fig. \ref{#1}}
+\def\eref#1{(\ref{#1})}
+
+%%%%%%%%%%%%%%% FINALLY CREATE THE DOCUMENT %%%%%%%%%%%%%%%%%%%%
+
+\begin{document}
+\frontpage
+\noticePage
+
+% The white page command is still available but the forth page is no longer there
+% \WhitePage{THIS PAGE INTENTIONALLY LEFT BLANK}
+% \WhitePage{}
+
+%%%%%%%%%%%%%% EVENTUALLY ADD THE DISTRIBUTION LIST %%%%%%%%%%%%%%%
+% \pagestyle{empty}
+% \DistributionList
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Table of content
+
+\setcounter{page}{1}
+\pagenumbering{roman}
+\tableofcontents
+\cleardoublepage %start new page
+\pagenumbering{arabic}
+\setcounter{page}{1} %reset the page counter
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\specialsec{Foreword}
+\label{sec.foreword}
+
+\noindent Nunc vestibulum condimentum nisi. Nam erat diam, suscipit vitae nisl eget, tempus tempus eros. Proin vel diam convallis, bibendum mi id, faucibus eros. Donec mi nisl, auctor quis aliquet a, ultricies vel metus. Ut rhoncus nulla augue, in egestas metus fringilla non. Sed sit amet felis dignissim, ornare elit vel, mattis augue. In adipiscing euismod purus id rutrum. Nulla facilisi. Nulla vitae dui lectus.
+
+\newpage
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\specialsec{Acknowledgements}
+\label{sec.ackno}
+
+Nunc vestibulum condimentum nisi. Nam erat diam, suscipit vitae nisl eget, tempus tempus eros. Proin vel diam convallis, bibendum mi id, faucibus eros. Donec mi nisl, auctor quis aliquet a, ultricies vel metus. Ut rhoncus nulla augue, in egestas metus fringilla non. Sed sit amet felis dignissim, ornare elit vel, mattis augue. In adipiscing euismod purus id rutrum. Nulla facilisi. Nulla vitae dui lectus.\\
+~\\
+~\\
+\noindent \textit{\textbf{Authors}}\\
+\noindent List of authors...
+
+\newpage
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\specialsec{Abstract} 
+Nunc vestibulum condimentum nisi. Nam erat diam, suscipit vitae nisl eget, tempus tempus eros. Proin vel diam convallis, bibendum mi id, faucibus eros. Donec mi nisl, auctor quis aliquet a, ultricies vel metus. Ut rhoncus nulla augue, in egestas metus fringilla non. Sed sit amet felis dignissim, ornare elit vel, mattis augue. In adipiscing euismod purus id rutrum. Nulla facilisi. Nulla vitae dui lectus.
+~\\
+Nunc vestibulum condimentum nisi. Nam erat diam, suscipit vitae nisl eget, tempus tempus eros. Proin vel diam convallis, bibendum mi id, faucibus eros. Donec mi nisl, auctor quis aliquet a, ultricies vel metus. Ut rhoncus nulla augue, in egestas metus fringilla non. Sed sit amet felis dignissim, ornare elit vel, mattis augue. In adipiscing euismod purus id rutrum. Nulla facilisi. Nulla vitae dui lectus.
+~\\
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed quis metus dolor. Nam congue cursus ligula sed faucibus. Fusce ligula est, mattis ut ullamcorper id, vulputate nec urna. Curabitur sit amet nisi eget urna ornare ultrices. Cras eget facilisis dolor. Sed id velit sit amet dui ornare dapibus at et lorem. Donec erat lacus, dapibus a massa at, euismod hendrerit leo.
+
+\newpage
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Introduction} 
+\label{sec.Introduction}
+%
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed quis metus dolor. Nam congue cursus ligula sed faucibus. Fusce ligula est, mattis ut ullamcorper id, vulputate nec urna. Curabitur sit amet nisi eget urna ornare ultrices ( ). Cras eget facilisis dolor. Sed id velit sit amet dui ornare dapibus at et lorem. Donec erat lacus, dapibus a massa at, euismod hendrerit leo. Etiam volutpat dapibus dui a laoreet. Mauris gravida lobortis hendrerit. Integer at risus erat. Ut luctus lectus lorem, sit amet molestie lacus dictum id. Donec dolor lacus, aliquam et urna quis, cursus convallis nisi. Cras aliquet convallis urna, ac elementum leo accumsan ut. Nunc accumsan dolor dolor, vitae iaculis libero tempus non.
+
+\newpage
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Second heading of body of report}
+\label{sec.secondheading}
+%
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed quis metus dolor. Nam congue cursus ligula sed faucibus. Fusce ligula est, mattis ut ullamcorper id, vulputate nec urna. Curabitur sit amet nisi eget urna ornare ultrices. Cras eget facilisis dolor. Sed id velit sit amet dui ornare dapibus at et lorem. Donec erat lacus, dapibus a massa at, euismod hendrerit leo.
+Etiam volutpat dapibus dui a laoreet. Mauris gravida lobortis hendrerit. Integer at risus erat. Ut luctus lectus lorem, sit amet molestie lacus dictum id. Donec dolor lacus, aliquam et urna quis, cursus convallis nisi. Cras aliquet convallis urna, ac elementum leo accumsan ut. Nunc accumsan dolor dolor, vitae iaculis libero tempus non.\\
+%
+\begin{itemize}
+		\item	Etiam volutpat dapibus dui a laoreet. 
+		\item Mauris gravida lobortis hendrerit. Integer at risus erat. 
+		\item Ut luctus lectus lorem, sit amet molestie lacus dictum id. 
+		\item Donec dolor lacus, aliquam et urna quis, cursus convallis nisi. Cras aliquet convallis urna, ac elementum leo accumsan ut. Nunc accumsan dolor dolor, vitae iaculis libero tempus non:
+
+	\begin{itemize}
+			\item Lorem ipsum dolor sit amet, consectetur adipiscing elit. 
+			\item Sed quis metus dolor. 
+			\item Nam congue cursus ligula sed faucibus.
+	\end{itemize}
+\end{itemize}
+%
+\subsection{Subheading 1}
+%
+Nunc vestibulum condimentum nisi. Nam erat diam, suscipit vitae nisl eget, tempus tempus eros. Proin vel diam convallis, bibendum mi id, faucibus eros. Donec mi nisl, auctor quis aliquet a, ultricies vel metus. Ut rhoncus nulla augue, in egestas metus fringilla non. Sed sit amet felis dignissim, ornare elit vel, mattis augue. In adipiscing euismod purus id rutrum. Nulla facilisi. Nulla vitae dui lectus.
+%
+\begin{enumerate}
+	\item This is a numbered list.
+	\item Etiam volutpat dapibus dui a laoreet.
+	\begin{enumerate}
+		\item	This list can have two levels.
+		\item	Nunc accumsan dolor dolor
+	\end{enumerate}
+	\item Mauris gravida lobortis hendrerit. 
+	\item Integer at risus erat. 
+\end{enumerate}
+Ut luctus lectus lorem, sit amet molestie lacus dictum id. Donec dolor lacus, aliquam et urna quis, cursus convallis nisi. Cras aliquet convallis urna, ac elementum leo accumsan ut. Nunc accumsan dolor dolor, vitae iaculis libero tempus non.
+
+
+\subsubsection{Subheading 2}
+Nunc vestibulum condimentum nisi. Nam erat diam, suscipit vitae nisl eget, tempus tempus eros. Proin vel diam convallis, bibendum mi id, faucibus eros. Donec mi nisl, auctor quis aliquet a, ultricies vel metus. Ut rhoncus nulla augue, in egestas metus fringilla non. Sed sit amet felis dignissim, ornare elit vel, mattis augue. In adipiscing euismod purus id rutrum. Nulla facilisi. Nulla vitae dui lectus.
+
+\renewcommand{\arraystretch}{2}
+\begin{table}
+		\caption{Nunc vestibulum condimentum nisi. Nam erat diam.}
+		\begin{tabular}{|p{0.2\textwidth}|p{0.16\columnwidth}|p{0.16\columnwidth}|p{0.16\columnwidth}|p{0.16\columnwidth}|}\hline
+				\textbf{Nunc} &	\textbf{Nunc} &	\textbf{Nunc} &	\textbf{Nunc} &	\textbf{Nunc} \\ \hline 
+							Nulla	& Nulla	& Nulla	& Nulla	& Nulla\\\hline 
+							Nulla	& Nulla	& Nulla	& Nulla	& Nulla\\\hline
+		\end{tabular}
+	\\
+	~\\
+		\textit{Source:} Eurostat, 2016.
+\end{table}
+\newpage
+%
+\paragraph{Subheading 3}
+Nunc vestibulum condimentum nisi. Nam erat diam, suscipit vitae nisl eget, tempus tempus eros. Proin vel diam convallis, bibendum mi id, faucibus eros. Donec mi nisl, auctor quis aliquet a, ultricies vel metus. Ut rhoncus nulla augue, in egestas metus fringilla non. Sed sit amet felis dignissim, ornare elit vel, mattis augue. In adipiscing euismod purus id rutrum. Nulla facilisi. Nulla vitae dui lectus.
+
+\subparagraph{Subheading 4}
+Nunc vestibulum condimentum nisi. Nam erat diam, suscipit vitae nisl eget, tempus tempus eros. Proin vel diam convallis, bibendum mi id, faucibus eros. Donec mi nisl, auctor quis aliquet a, ultricies vel metus. Ut rhoncus nulla augue, in egestas metus fringilla non. Sed sit amet felis dignissim, ornare elit vel, mattis augue. In adipiscing euismod purus id rutrum. Nulla facilisi. Nulla vitae dui lectus.
+
+\begin{figure}[!h]
+	\centering
+		\caption{Simplified diagram of the convergence model}
+		\includegraphics[width=0.80\textwidth]{figure.png}
+	~\\ \textit{Source:} JRC, Eurostat, 2016.
+	\label{fig:figure}
+\end{figure}
+
+\subparagraph{Second subheading 4}
+Nunc vestibulum condimentum nisi. Nam erat diam, suscipit vitae nisl eget, tempus tempus eros. Proin vel diam convallis, bibendum mi id, faucibus eros. Donec mi nisl, auctor quis aliquet a, ultricies vel metus. Ut rhoncus nulla augue, in egestas metus fringilla non. Sed sit amet felis dignissim, ornare elit vel, mattis augue. In adipiscing euismod purus id rutrum. Nulla facilisi. Nulla vitae dui lectus.
+~\\
+\begin{center}
+
+\end{center}
+\newpage
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\paragraph{Second subheading 3}
+Nunc vestibulum condimentum nisi. Nam erat diam, suscipit vitae nisl eget, tempus tempus eros. Proin vel diam convallis, bibendum mi id, faucibus eros. Donec mi nisl, auctor quis aliquet a, ultricies vel metus. Ut rhoncus nulla augue, in egestas metus fringilla non. Sed sit amet felis dignissim, ornare elit vel, mattis augue. In adipiscing euismod purus id rutrum. Nulla facilisi. Nulla vitae dui lectus.
+\\
+%
+\textit{\color{Red} Boxes are not supported at the moment, you will have to create them yourself.}
+\newpage
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Conclusions}
+\label{sec.conclusion}
+%
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed quis metus dolor. Nam congue cursus ligula sed faucibus. Fusce ligula est, mattis ut ullamcorper id, vulputate nec urna. Curabitur sit amet nisi eget urna ornare ultrices. Cras eget facilisis dolor. Sed id velit sit amet dui ornare dapibus at et lorem. Donec erat lacus, dapibus a massa at, euismod hendrerit leo.
+Etiam volutpat dapibus dui a laoreet. Mauris gravida lobortis hendrerit. Integer at risus erat. Ut luctus lectus lorem, sit amet molestie lacus dictum id. Donec dolor lacus, aliquam et urna quis, cursus convallis nisi. Cras aliquet convallis urna, ac elementum leo accumsan ut. Nunc accumsan dolor dolor, vitae iaculis libero tempus non.
+Nunc vestibulum condimentum nisi. Nam erat diam, suscipit vitae nisl eget, tempus tempus eros. Proin vel diam convallis, bibendum mi id, faucibus eros. Donec mi nisl, auctor quis aliquet a, ultricies vel metus. Ut rhoncus nulla augue, in egestas metus fringilla non. Sed sit amet felis dignissim, ornare elit vel, mattis augue. In adipiscing euismod purus id rutrum. Nulla facilisi. Nulla vitae dui lectus.
+
+\newpage
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Add the bibliography here 
+\clearpage
+\phantomsection
+\addcontentsline{toc}{part}{References}
+
+\nocite{*}
+\bibliographystyle{style/jrc}
+\bibliography{foo}
+
+\newpage
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Acronyms %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\specialsec{List of abbreviations and definitions}
+
+% The latex package 'acronym' is used here
+\input{acrofoo}
+
+\newpage
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% List of figures and list of tables %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\phantomsection
+\addcontentsline{toc}{part}{List of figures}
+\listoffigures
+\newpage
+
+\phantomsection
+\addcontentsline{toc}{part}{List of tables}
+\listoftables
+\newpage
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\specialsec{Annexes}
+\annex{Title of annex}
+\newpage
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Last two pages %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% When the EUR code is not present, the second last page (with the publisher information) is not included
+% It is suggeset to add white pages to make print the last page as a cover
+
+% \WhitePage{THIS PAGE INTENTIONALLY LEFT BLANK}
+% \WhitePage{} 
+\LastPages
+
+\end{document} 
