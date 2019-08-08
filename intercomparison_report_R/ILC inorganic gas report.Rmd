@@ -10,11 +10,11 @@ output:
     # fig_height: 6
     # fig_caption: true
   word_document: 
-  reference_docx: word_style_FK.docx
+  reference_docx: template REPORT.docx
   
  
-  toc: TRUE
-  toc_depth: 3
+  # toc: TRUE
+  # toc_depth: 3
   
   # template: word_style_FK.docx
   # pdf_document: template.pdf
@@ -24,7 +24,7 @@ output:
   
 # highlight: tango  # specifies the syntax highlighting style
 
-bibliography: [ILC GAS PHASE TECH REPORT.bib]
+# references: [ILC GAS PHASE TECH REPORT.bib]
 # csl: sensors.csl
 # csl: nature.csl
 # csl: atmospheric-environment.csl
@@ -73,6 +73,8 @@ library(RGraphics)
 library(requireR)
 library(captioner)
 library(citr)
+library(corrplot)
+
 
 
 ```
@@ -134,7 +136,6 @@ The test gases generation and measurements finished on Thursday at 9:00.
 ```{r, echo = FALSE, warning = FALSE, cache = FALSE, results = 'asis', message = FALSE, comment=FALSE}
 
 # function for caption
-
 tab <- captioner::captioner(prefix ="Table")
 figs <- captioner::captioner (prefix = "Figure")
 
@@ -149,12 +150,10 @@ Participants.df <- as.data.frame(Participants.df)
 close(InterDB)
 
 
-
-
 ```
 
 
-All participants were organisations dealing with the routine ambient air monitoring or institutions involved in environmental or public health protection. The national representatives came from `r Participants.df$country_name `.
+All participants were organisations dealing with the routine ambient air monitoring or institutions involved in environmental or public health protection. The national representatives came from `r Participants.df$country_name`.
 
 
 
@@ -162,24 +161,38 @@ All participants were organisations dealing with the routine ambient air monitor
 ```{r, echo = FALSE, warning = FALSE, cache = FALSE, out.width = "80%", results = 'asis', message = FALSE, comment=FALSE}
 
 Tab1 <- tab(name="Participant", "List of participating organizations")
-
 pander::pander(Tab1)
-
 
 ```
 
-```{r, echo = FALSE, warning = FALSE, cache = FALSE, out.width = "80%", results = 'asis', message = FALSE, comment=FALSE}
+```{r, echo = FALSE, warning = FALSE, cache = FALSE, out.width = "70%", results = 'asis', message = FALSE, comment=FALSE}
 
-ft <- regulartable(Participants.df)
+
+# DB reading
+InterDB.path <- file.path("E:\\BKUP\\Desktop\\LCE_Template.GAS-PHASE.accdb")
+# InterDB.path <- file.choose()
+InterDB <- RODBC::odbcConnectAccess2007(InterDB.path, uid = "", pwd = "")
+## Import the table/query
+Participants.df <- sqlFetch(InterDB, "labs")[,c("acronim", "full_name", "country_name", "code")]
+Participants.df <- as.data.frame(Participants.df)
+# disconnect
+close(InterDB)
+
+ft <- flextable::regulartable(Participants.df)
+
 ft <- theme_vanilla(ft)
 ft <- color(ft, color = "black", part = "header")
-ft <- width(ft, width = .85) # set width of all columns
+ft <- flextable::width(ft, width = .8) # set width of all columns
 ft <- fontsize(ft, part = "body", size = 10)
 ft <- fontsize(ft, part = "header", size = 12)
-ft <- align( ft, align = "center", part = "all")
+
+ft <- flextable::align(ft, align = "center")
 ft <-  bg(ft, bg = "#E4C994", part = "header")
 ft <- autofit(ft)
 ft
+
+# print(doc, target = "test.docx")
+
 
 
 ```
@@ -221,18 +234,19 @@ instruments.df <- as.data.frame(instruments.df)
 close(InterDB)
 
 
-ft <- flextable(instruments.df)
+ft <- flextable::flextable(instruments.df)
 ft <- merge_v(ft, j = "parameter")
 ft <- theme_vanilla(ft)
-ft <- width(ft, width = 1.20) # set width of all columns
+ft <- flextable::width(ft, width = 1.20) # set width of all columns
 ft <- fontsize(ft, part = "body", size = 8) 
 ft <- fontsize(ft, part = "header", size = 10)
-ft <- align( ft, align = "center", part = "all")
-# ft <- bg(ft, bg = "#E4C994", part = "header")
+ft <- flextable::align( ft, align = "center", part = "all")
+ft <- bg(ft, bg = "#E4C994", part = "header")
 ft <- bg(ft, bg = "#C90000", part = "header")
 ft <- color(ft, color = "white", part = "header")
-ft  <- autofit(ft)
+ft <- autofit(ft)
 ft
+
 
 
 ```
@@ -252,23 +266,25 @@ pander::pander(Tab3)
 
 ```
 
-```{r, echo = FALSE, warning = FALSE, cache = FALSE, results = 'asis', message = FALSE, comment=FALSE}
+```{r, echo = FALSE, warning = FALSE, cache = FALSE, results = 'asis', out.width = "90%", message = FALSE, comment=FALSE}
 
 Table3 <- read_csv("W:\\Intercomparisons\\development auto report R\\ILC Table 3 sequence.csv")
-Table3 <- Table3[1:(ncol(Table3)-1)]
-
+# Table3 <- read_excel("W:\\Intercomparisons\\development auto report R\\ILC Table 3 sequence.xlsx")
+Table3 <- Table3[1:(ncol(Table3))]
 
 T3 <- as.data.frame(Table3)
+
 # T3$`start time`
-ft <- regulartable(T3)
-  # fmt_datetime(T3, columns = vars(ft),
+
+ft <- flextable::regulartable(T3)
+# fmt_datetime(ft, columns = vars(`start.time`))
     # time_style = 3) 
 # ft <- set_formatter_type(x = ft, `start.time` = fmt_datetime( "%H:%M", ))
 ft <- theme_vanilla(ft)
-ft <- width(ft, width = .55) # set width of all columns
+ft <- flextable::width(ft, width = .65) # set width of all columns
 ft <- fontsize(ft, part = "body", size = 8)
-ft <- fontsize(ft, part = "header", size = 9)
-ft <- align( ft, align = "center", part = "all")
+ft <- fontsize(ft, part = "header", size = 8)
+ft <- flextable::align( ft, align = "center", part = "all")
 ft <-  bg(ft, bg = "#E4C994", part = "header")
 autofit(ft)
 ft
@@ -328,26 +344,27 @@ Table4[ Table4$Gas == "CO" , "a" ] <- round(Table4[ Table4$Gas == "CO" , "a" ], 
 # flextable set up
 T4 <- as.data.frame(Table4)
 
-ft <- regulartable(T4,
+ft <- flextable::regulartable(T4,
 col_keys = c("Gas", "a", "b (nmol/mol)"))
 # ft <- theme_vanilla(ft)
 ft <- color(ft, color = "blue", part = "header")
-ft <- width(ft, width = .99) # set width of all columns
+ft <- flextable::width(ft, width = .99) # set width of all columns
 ft <- fontsize(ft, part = "body", size = 9)
 ft <- fontsize(ft, part = "header", size = 11)
-ft <- align( ft, align = "center", part = "all")
+ft <- flextable::align( ft, align = "center", part = "all")
 ft <- bg(ft, bg = "#E4C994", part = "header")
 ft <- colformat_num(
   x = ft, col_keys = "b (nmol/mol)",
   digits = 0)
-
 autofit(ft)
-ft
+
+
+# doc <- read_docx()
+# doc <- body_add_flextable(doc, value = ft)
 
 ```
 
-Equation 2          
-$$ \sigma _p = (a).(c) + b $$
+Equation 2 $$ \sigma _p = (a).(c) + b $$
 
 
 
@@ -360,12 +377,7 @@ The assessment of results in the z‘-score evaluation is made according to the 
 
 
 
-```{r, echo = FALSE, warning = FALSE, cache = FALSE, out.width = "90%", results = 'asis', message = FALSE, comment=FALSE}
 
-Tab5 <- tab(name="z' evaluation", "Questionable and unsatisfactory results according to z'-score")
-pander::pander(Tab5)
-
-```
 
 
 The results of z’-score evaluation are presented in bar plots (Figure 1 to Figure 5) in which the z’-scores of each participant are grouped together, and assessment criteria are presented as z’=±2 and z’=±3 lines.
@@ -373,52 +385,17 @@ The results of z’-score evaluation are presented in bar plots (Figure 1 to Fig
 Figure 1: Z’-score evaluations of SO2 measurements 
 Scores are given for each participant and each tested concentration level (run). Run number order (with nominal concentration) is: 0 (0 nmol/mol), 1 (124 nmol/mol), 2 (67 nmol/mol), 3 (36 nmol/mol), 4 (11 nmol/mol), 5 (21 nmol/mol). The assessment criteria are presented as z’=±2 (blue line) and z’=±3 (red line). They represent the limits for the questionable and unsatisfactory results. 
 
-```{r, echo = FALSE, warning = FALSE, cache = FALSE, out.width = "70%", results = 'asis', message = FALSE, comment=FALSE}
-
-Fig2 <- figs(name="z'", "z' score summary")
-pander::pander(Fig2)
-
-```
-
-```{r, fig.height=16, fig.width=18, echo = FALSE, warning = FALSE, cache = FALSE, out.width = "70%", results = 'asis', message = FALSE, comment=FALSE}
-
-## Create a connection with the Data Base
-InterDB.path <- file.path("E:\\BKUP\\Desktop\\LCE_Template.GAS-PHASE.accdb")
-InterDB <- RODBC::odbcConnectAccess2007(InterDB.path)
- 
-# Loading query
-ISO13528_7_6_z.df <- sqlFetch(InterDB, "ISO 13528 (7_6)_z")[,c("code", "parameter", "z","run", "run (1-j-q)", "z_2+", "z_2-", "z_3+", "z_3-")]
-
-# disconnect
-close(InterDB)
-
-Tick.X <- ISO13528_7_6_z.df[order(ISO13528_7_6_z.df$code),"run (1-j-q)"]
-fig2 <- ggplot(ISO13528_7_6_z.df, aes(x = run, y = z, fill = parameter)) + 
-  geom_bar(stat = "identity")  + 
-  labs(title = "", x = "", y = "") +
-  scale_x_discrete(labels = Tick.X) +
-  geom_hline(aes(yintercept = ISO13528_7_6_z.df$`z_2+`),  col = "green", lty = 1) +
-  geom_hline(aes(yintercept = ISO13528_7_6_z.df$`z_3+`),  col = "red"  , lty = 1) +
-  geom_hline(aes(yintercept = ISO13528_7_6_z.df$`z_2-`),  col = "green", lty = 1) +
-  geom_hline(aes(yintercept = ISO13528_7_6_z.df$`z_3-`),  col = "red"  , lty = 1) +
-  facet_wrap(~ code, ncol = 2, scales = 'free_y') + 
-  labs(title = "", x = "", y = "z-score") 
-fig2
-
-
-```
-
-
 
 
 ```{r, fig.height=9, fig.width=12, echo = FALSE, warning = FALSE, cache = FALSE, out.width = "70%", results = 'asis', message = FALSE, comment=FALSE}
 
-Fig3 <- figs(name="z'", "z' score pollutants")
-pander::pander(Fig3)
+# Fig3 <- figs(name="z'", "z' score pollutants")
+# pander::pander(Fig3)
 
 ```
 
-```{r, fig.height=9, fig.width=12, echo = FALSE, warning = FALSE, cache = FALSE, out.width = "70%", results = 'asis', message = FALSE, comment=FALSE}
+
+```{r, fig.height=20, fig.width=35, echo = FALSE, warning = FALSE, cache = FALSE, out.width = "100%", results = 'asis', message = FALSE, comment=FALSE}
 
 ## Create a connection with the Data Base
 InterDB.path <- file.path("E:\\BKUP\\Desktop\\LCE_Template.GAS-PHASE.accdb")
@@ -432,32 +409,35 @@ ISO13528_7_6_z.df <- sqlFetch(InterDB, "ISO 13528 (7_6)_z")[,c("code", "paramete
 close(InterDB)
 
 
-for (i in unique(ISO13528_7_6_z.df$code)) {
+for (i in unique(ISO13528_7_6_z.df$parameter)) {
     # Caption
-  fig.nb <- grep(i, unique(ISO13528_7_6_z.df$code))
+  fig.nb <- grep(i, unique(ISO13528_7_6_z.df$parameter))
   Caption <-  paste0("Figure ", fig.nb,": Z’-score evaluations of CO measurements 
 Scores are given for each participant and each tested concentration level (run). The assessment criteria are presented as z’=±2 (blue line) and z’=±3 (red line). They represent the limits for the questionable and unsatisfactory results")
   pander::pander(Caption)
   
   
-  Tick.X <- ISO13528_7_6_z.df[ISO13528_7_6_z.df$code == i,"run (1-j-q)"]
+  
+  Tick.X <- unique(ISO13528_7_6_z.df[ISO13528_7_6_z.df$parameter == i, "run (1-j-q)"])
   fig <- ggplot(ISO13528_7_6_z.df %>% 
-                  filter(code == i), 
-                aes(x = run, y = z, fill = parameter)) +
-    theme_bw(base_size = 20) +
-    geom_bar(colour= "black", stat = "identity") +
- 
+                  filter(parameter == i), 
+                aes(x = `run (1-j-q)`, y = z, fill = code)) +
+    theme_bw(base_size = 40) +
+    geom_col(colour= "black", stat = "identity") +
+    facet_grid(. ~ code) +
+    guides(fill=FALSE) +   # no legend
     ## axis.text for both axes
     
-   labs(title = paste0("Lab ", i), x = "", y = "z'-score") +
-    scale_y_continuous(limit = c(-4, +4)) +
-    scale_x_discrete(labels = Tick.X) +
+   labs(title = paste0("Parameter ", i), x = "", y = "z'-score") +
+    scale_y_continuous(limit = c(-3.2, +3.2)) +
+    scale_x_continuous(breaks = Tick.X) +
+    # scale_x_continuos(name="run (1-j-q)", limits=c())
     geom_hline(yintercept = 2,  col = "blue", lty = 1) +
     geom_hline(yintercept = 3,  col = "red" , lty = 1) +
     geom_hline(yintercept = -2,  col = "blue", lty = 1) +
     geom_hline(yintercept = -3,  col = "red" , lty = 1) +
     # ggtitle(expression(paste("title position)"))) + 
-    theme(plot.title = element_text(lineheight=.8, face="bold", size = 15, hjust = 0.5))
+    theme(plot.title = element_text(lineheight=1.8, face="bold", size = 30, hjust = 0.5))
   print(fig)
   
 }
@@ -466,43 +446,33 @@ Scores are given for each participant and each tested concentration level (run).
 ```
 
 
+
+
+
+
 \newline
 
 Figure 2: Z’-score evaluations of CO measurements 
 Scores are given for each participant and each tested concentration level (run). Run number order (with nominal concentration) is: 0 (0 μmol/mol), 1 (8.3 μmol/mol), 2 (3 μmol/mol), 3 (2.1 μmol/mol), 4 (1 μmol/mol), 5 (4.8 μmol/mol). The assessment criteria are presented as z’=±2 (blue line) and z’=±3 (red line). They represent the limits for the questionable and unsatisfactory results
 
-```{r}
-
-```
 
 \newline
 
 Figure 3: Z’-score evaluations of O3 measurements
 Scores are given for each participant and each concentration level (run). Run number order (with nominal concentration) is: 0 (0 nmol/mol), 1 (110 nmol/mol), 2 (90 nmol/mol), 3 (40 nmol/mol), 4 (60 nmol/mol), 5 (25 nmol/mol). The assessment criteria are presented as z’=±2 (blue line) and z’=±3 (red line). They represent the limits for the questionable and unsatisfactory results.
 
-```{r}
-
-```
 
 \newline
 
 Figure 4: Z’-score evaluations of NO measurements
 Scores are given for each participant and each tested concentration level (run). Run number order (with nominal concentration) is: 0 (0 nmol/mol), 1 (490 nmol/mol), 2 (380 nmol/mol), 3 (300 mol/mol), 4 (200 nmol/mol), 5 (65 nmol/mol), 6 (25 nmol/mol), 7 (135 nmol/mol), 8 (70 nmol/mol), 9 (40 nmol/mol), 10 (15 nmol/mol). The assessment criteria are presented as z’=±2 (blue line) and z’=±3 (redline). They represent the limits for the questionable and unsatisfactory results. 
 
-```{r}
-
-
-
-```
 
 \newline
 
 Figure 5: Z’-score evaluations of NO2 measurements
 Scores are given for each participant and each concentration level (run). Run number order (with nominal concentration) is: 0 (0 nmol/mol), 1 (110 nmol/mol), 2 (100 nmol/mol), 3 (40 nmol/mol), 4 (65 nmol/mol), 5 (25 nmol/mol).  The assessment criteria are presented as z’=±2 (blue line) and z’=±3 (red line). They represent the limits for the questionable and unsatisfactory results
 
-```{r}
-
-```
 
 ### 5.2	En-score 
 
@@ -515,10 +485,6 @@ $$En-score = \frac {x_i - X}{\sqrt {{U}_{xi}^2+U_x^2}}$$
 where X is the assigned/reference value with an expanded uncertainty UX and xi is the participant’s average value with an expanded uncertainty UXi. Satisfactory results are the ones for which "absolute En<1". 
 In Figure 6 to Figure 10 the bias of each participant (xi-X) is plotted and error bars are used to show the value of denominator of equation 2 
 
-```{r}
-
-```
-
 These plots represent also the En-score evaluations where, considering the En criterion ( ), all results with error bars touching or crossing the x-axis are satisfactory. Reported standard uncertainties (Annex A) that are larger than the “standard deviation for proficiency assessments” (p, Table 4) are considered not fit-for-purpose and are denoted with “*” in the x-axis of each figure. The En evaluation showed few unsatisfactory results for different parameters and concentrations, as reported in table 5.
 
 
@@ -526,25 +492,77 @@ These plots represent also the En-score evaluations where, considering the En cr
 ```{r, echo = FALSE, warning = FALSE, cache = FALSE, out.width = "90%", results = 'asis', message = FALSE, comment=FALSE}
 
 Tab6 <- tab(name="En evaluation", "Unsatisfactory results according to En-score")
-
 pander::pander(Tab6)
 
 ```
+
+
+```{r, fig.height=10, fig.width=10, echo = FALSE, warning = FALSE, cache = FALSE, out.width = "70%", results = 'asis', message = FALSE, comment=FALSE}
+
+## Create a connection with the Data Base
+  InterDB.path <- file.path("E:\\BKUP\\Desktop\\LCE_Template.GAS-PHASE.accdb")
+  InterDB <- RODBC::odbcConnectAccess2007(InterDB.path)
+   
+  # Loading query
+  ISO13528_7_5_En.df <- sqlFetch(InterDB, "ISO 13528 (7_5)_En")[,c("code", "parameter", "En","run", "En_OK?")]
+  
+  # disconnect
+  close(InterDB)
+  
+  tb <- ISO13528_7_5_En.df 
+  
+ 
+  qt <- filter(tb, En < -1 | En > 1)
+  
+  
+
+  
+ft <- flextable::regulartable(qt,  cwidth = 1.3, cheight = 0.4,
+                             col_keys = c("code", "run", "En", "En_OK?" ))
+# ft <- regulartable(ft)
+ft <- theme_vanilla(ft)
+ft <- color(ft, color = "black", part = "header")
+ft <- flextable::width(ft, width = 1.0) # set width of all columns 
+ft <- fontsize(ft, part = "body", size = 10)
+ft <- fontsize(ft, part = "header", size = 11)
+ft <- flextable::align( ft, align = "center", part = "all")
+ft <-  bg(ft, bg = "#E4C994", part = "header")
+ft <- colformat_num(
+   x = ft, col_keys = "En",
+   digits = 1)
+ft  <- autofit(ft)
+ft
+  
+# print(ft)
+  
+  # ft <- set_header_labels( ft, `En_OK?` = "En-score evaluation", code = "Code", run = "Run", En = "En score value")
+  # ft <- bg(ft, bg = "#C90000", part = "header")
+  # ft <- color(ft, color = "white", part = "header")
+  
+  
+  
+  # doc <- read_docx() %>% 
+  # body_add_flextable(ft)
+  # print(doc, target="word_style_FK.docx")
+```
+
+
+
 
 Figure 6: Bias of participant’s SO2 measurement results.
 Expanded uncertainty of bias for each run is presented as error bar. The results with error bars touching or crossing the x-axis are satisfactory. For each evaluation the run number (numbers 0 to 5) together with the participants rounded run average (nmol/mol) is given. The ‘*’ mark indicates reported standard uncertainties bigger than p.
 
 ```{r, fig.height=9, fig.width=12, echo = FALSE, warning = FALSE, cache = FALSE, out.width = "70%", results = 'asis', message = FALSE, comment=FALSE}
 
-Fig4 <- figs(name="En'", "En score pollutants")
-pander::pander(Fig4)
+# Fig4 <- figs(name="En'", "En score pollutants")
+# pander::pander(Fig4)
 # En’-score evaluations of CO measurements Scores are given for each participant and each tested concentration level (run). The assessment criteria are presented as z’=±2 (blue line) and z’=±3 (red line). They represent the limits for the questionable and unsatisfactory results")
 # print(Caption, quote = F)
 
 ```
 
 
-```{r, fig.height=15, fig.width=30, echo = FALSE, warning = FALSE, cache = FALSE, out.width = "90%", results = 'asis', message = FALSE, comment=FALSE}
+```{r, fig.height=15, fig.width=30, fig.cap = "The caption: ID = {{Fig4}}", echo = FALSE, warning = FALSE, cache = FALSE, out.width = "90%", results = 'asis', message = FALSE, comment=FALSE}
 
 ## Create a connection with the Data Base
 InterDB.path <- file.path("E:\\BKUP\\Desktop\\LCE_Template.GAS-PHASE.accdb")
@@ -560,8 +578,6 @@ close(InterDB)
 for (i in unique(ISO13528_7_5_En.df$parameter)) {
     # Caption
   # fig.nb <- grep(i, unique(ISO13528_7_5_En.df$parameter))
-  
- 
   
   ISO13528_7_5_En.df$`run (1-j-q)` <- as.factor(ISO13528_7_5_En.df$`run (1-j-q)`)
   
@@ -589,8 +605,12 @@ for (i in unique(ISO13528_7_5_En.df$parameter)) {
       guides(fill=FALSE) +   # no legend
   #  scale_x_discrete(labels = Tick.X)
   theme(plot.title = element_text(lineheight=.50, face="bold", size = 45, hjust = 0.5))
-    
-  print(fig)
+  
+  Fig4 <- figs(name = paste0("Bias",i),caption = paste0(": Bias of participants's ",i))
+  pander::pander(Fig4)
+  pander::pander("En’-score evaluations of CO measurements Scores are given for each participant and each tested concentration level (run). The     assessment criteria are presented as z’=±2 (blue line) and z’=±3 (red line). They represent the limits for the questionable and     unsatisfactory results")
+ browser()
+  print(Fig4)
   
 }
 
@@ -600,31 +620,22 @@ for (i in unique(ISO13528_7_5_En.df$parameter)) {
 Figure 7: Bias of participant’s CO measurement results
 Expanded uncertainty of bias for each run is presented as error bar. Results with error bars touching or crossing the x-axis are satisfactory. For each evaluation the run number (numbers 0 to 5) together with the participants rounded run average (μmol/mol) is given. The ‘*’ mark indicates reported standard uncertainties bigger than p.
 
-```{r}
 
-```
 
 Figure 8: Bias of participant’s O3 measurement results
 Expanded uncertainty of bias for each run is presented as error bar. Results with error bars touching or crossing the x-axis are satisfactory. For each evaluation the run number (numbers 0 to 5) together with the participants rounded run average (nmol/mol) is given. The ‘*’ mark indicates reported standard uncertainties bigger than p.
 
-```{r}
-
-```
 
 Figure 9: Bias of participant’s NO measurement results
 Expanded uncertainty of bias for each run is presented as error bar. Results with error bars touching or crossing the x-axis are satisfactory. For each evaluation the run number (numbers 0 to 10) together with the participants rounded run average (nmol/mol) is given. The ‘*’ mark indicates reported standard uncertainties bigger than p.
 
-```{r}
 
-```
 
 Figure 10: Bias of participant’s NO2 measurement results
 Expanded uncertainty of bias is presented as error bar for NO2 run numbers 0, 2, 4, 6, 8 and 10 (see 
 Table 3). Results with error bars touching or crossing the x-axis are satisfactory. For each evaluation the run number together with the participants rounded run average (nmol/mol) is given. The ‘*’ mark indicates reported standard uncertainties bigger than p.
 
-```{r}
 
-```
 
 ## 6.	Performance characteristics of individual laboratories
 
@@ -633,9 +644,65 @@ Individual participants’ biases were evaluated and are presented in chapter 3.
 Figure 11: Bias of participant’s NO2 measurements with error bars representing expanded uncertainty for run numbers 1, 3, 5, 7 and 9.
 Within these test gas mixtures there is no gas phase titration to produce NO2 (see table 3). For each evaluation the run number together with the participants rounded run average (nmol/mol) is given.
 
-```{r}
+
+```{r, fig.height=10, fig.width=20, fig.cap = "The caption: ID = {{Fig4}}", echo = FALSE, warning = FALSE, cache = FALSE, out.width = "90%", results = 'asis', message = FALSE, comment=FALSE}
+
+## Create a connection with the Data Base
+InterDB.path <- file.path("E:\\BKUP\\Desktop\\LCE_Template.GAS-PHASE.accdb")
+InterDB <- RODBC::odbcConnectAccess2007(InterDB.path)
+
+# Loading query
+ISO13528_7_5_En.df <- sqlFetch(InterDB, "ISO 13528 (7_5)_En")[,c("code", "parameter", "bias", "error_bar", "run", "run (1-j-q)")]
+
+# disconnect
+close(InterDB)
+
+figNO2 <- ISO13528_7_5_En.df %>%
+filter(parameter == "NO2")%>%
+  filter()
+
+
+for (i in unique(figNO2$parameter)) {
+    # Caption
+  # fig.nb <- grep(i, unique(ISO13528_7_5_En.df$parameter))
+  
+  figNO2$`run (1-j-q)` <- as.factor(figNO2$`run (1-j-q)`)
+  
+  fig <- ggplot(figNO2 %>% 
+                  filter(parameter == i), 
+                aes(x = `run (1-j-q)`, y = bias, fill = i)) + 
+
+    
+   geom_point(size=5) +
+   geom_errorbar(aes(x=`run (1-j-q)`, 
+                     ymax=bias + error_bar, 
+                     ymin=bias - error_bar),
+                     size=1,
+                     width=0.3,
+                     na.rm=TRUE, 
+                     position="dodge") +
+    facet_grid(. ~ code) +
+    geom_hline(yintercept = 0,  col = "red", lty = 1) +
+    theme_bw(base_size = 10) +
+    
+    ## axis.text for both axes
+    
+   labs(title = paste0("parameter ", i), x = "", y = "bias xi-X") +
+     scale_y_continuous(limit = c()) +
+      guides(fill=FALSE) +   # no legend
+  #  scale_x_discrete(labels = Tick.X)
+  theme(plot.title = element_text(lineheight=.30, face="bold", size = 15, hjust = 0.2))
+  
+  Fig4 <- figs(name = paste0("Bias",i),caption = paste0(": Bias of participants's ",i))
+  pander::pander(Fig4)
+  pander::pander("En’-score evaluations of CO measurements Scores are given for each participant and each tested concentration level (run). The     assessment criteria are presented as z’=±2 (blue line) and z’=±3 (red line). They represent the limits for the questionable and     unsatisfactory results")
+ browser()
+  print(fig)
+  
+}
 
 ```
+
 
 ### 6.1 Converter efficiencies of NO2-to-NO for NOX analysers
 Since NO and NO2 test gases were produced by gas phase titration it is possible to evaluate the efficiency of the NO2-to-NO converter of each participant’s NOX analyser. The evaluation takes each participant’s NO and NO2 measurements before and after oxidation by O3. However, possible minor instabilities in the preparation of the test gas mixtures were not taken into account. The converter efficiency ($\alpha A$) is calculated using Equation 3 [4]: 
@@ -653,6 +720,77 @@ pander::pander(Tab7)
 
 ```
 
+
+```{r, echo = FALSE, warning = FALSE, cache = FALSE, out.width = "90%", results = 'asis', message = FALSE, comment=FALSE}
+# Create a connection with the Data Base
+InterDB.path <- file.path("E:\\BKUP\\Desktop\\LCE_Template.GAS-PHASE.accdb")
+InterDB <- RODBC::odbcConnectAccess2007(InterDB.path)
+
+# Loading query
+Measured_Data.df <- sqlFetch(InterDB, "Measured Data")[,c("parameter", "run (1-j-q)", "lab (1-i-p)", "yijk")]
+labs <- sqlFetch(InterDB, "labs")[ ,c("acronim", "code")]
+names(labs)[names(labs) == 'acronim'] <- "lab (1-i-p)"
+
+Measured_Data.df <- Measured_Data.df %>%
+  left_join(labs, by = "lab (1-i-p)")
+
+# disconnect
+close(InterDB)
+
+ft <- Measured_Data.df[,c("parameter", "run (1-j-q)", "lab (1-i-p)", "yijk", "code")]
+
+ft_filter <- ft %>%
+  dplyr::filter(parameter %in% c("NO2", "NO")) %>%
+  dplyr::filter(`run (1-j-q)` > 0) 
+  
+ft_filter <- ft_filter[order(ft_filter$code), ]
+
+ft_filter <- ft_filter %>%
+  group_by(parameter,
+           `run (1-j-q)`,
+           code) %>%
+summarise(mean = mean(yijk))
+
+CONV_eff <- function(Index, DF) {
+   return(abs((DF[DF$parameter == "NO2" & DF$`run (1-j-q)` == Index, "mean"] -
+            DF[DF$parameter == "NO2" & DF$`run (1-j-q)` == Index -1, "mean"])/
+     (DF[DF$parameter == "NO" & DF$`run (1-j-q)` == Index, "mean"] -
+            DF[DF$parameter == "NO" & DF$`run (1-j-q)` == Index - 1, "mean"])*100))
+ }
+ CONV_df <- data.frame(sapply(unique(ft_filter$code), function(Lab){
+   ft_code <- ft_filter %>% 
+     dplyr::filter(code == Lab)
+   DF_CONV <- unlist(sapply(seq(from = 2, to = length(ft_code$`run (1-j-q)`), by = 2), 
+                            CONV_eff, DF = ft_code))
+   return(DF_CONV)
+ } ))
+ names(CONV_df)     <- unique(ft_filter$code)
+ CONV_df$Runs <- paste0("Run", seq(from = 2, to = length(unique(ft_filter$`run (1-j-q)`)), by = 2))
+ 
+ ft <- flextable(CONV_df[, c(which(names(CONV_df) == "Runs"), grep(pattern = "Runs", x = names(CONV_df), invert = TRUE))])
+
+ 
+# 
+# ft <- flextable::regulartable(ft)
+# ft <- regulartable(ft)
+ft <- theme_vanilla(ft)
+ft <- color(ft, color = "black", part = "header")
+ft <- flextable::width(ft, width = .95) # set width of all columns 
+ft <- fontsize(ft, part = "body", size = 10)
+ft <- fontsize(ft, part = "header", size = 11)
+ft <- flextable::align( ft, align = "center", part = "all")
+ft <-  bg(ft, bg = "#E4C994", part = "header")
+ft  <- autofit(ft)
+ft
+  
+#  
+# doc <- read_docx() %>% 
+#   body_add_flextable(ft)
+# print(ft)
+
+```
+
+
 ## 7.	Discussion
 For a general assessment of the quality of each result a decision diagram was developed (Figure 12) that results in seven categories (1 to 7). The general comments for each category are:
 -1: measurement result is completely satisfactory
@@ -668,7 +806,7 @@ For a general assessment of the quality of each result a decision diagram was de
 ```{r, echo = FALSE, warning = FALSE, cache = FALSE, out.width = "90%", results = 'asis', message = FALSE, comment=FALSE}
 
 Fig12 <- figs(name="diagram", "Decision diagram for general assessment of proficiency results.")
-pander::pander(Tab7)
+pander::pander(Fig12)
 
 ```
 
@@ -689,7 +827,7 @@ pander::pander(Tab8)
 
 ```{r, echo = FALSE, warning = FALSE, cache = FALSE, out.width = "90%", results = 'asis', message = FALSE, comment=FALSE}
 
-## Create a connection with the Data Base
+# Create a connection with the Data Base
 InterDB.path <- file.path("E:\\BKUP\\Desktop\\LCE_Template.GAS-PHASE.accdb")
 InterDB <- RODBC::odbcConnectAccess2007(InterDB.path)
 
@@ -699,43 +837,39 @@ ISO13528_flags.df <- sqlFetch(InterDB, "ISO 13528 flags")[,c("code", "parameter"
 # disconnect
 close(InterDB)
 
+ft <- ISO13528_flags.df[,c("code", "parameter", "flag","run (1-j-q)", "yref,j")]%>%
+spread(code, flag)
+ft <- as.data.frame(ft)
 
-ft <- ISO13528_flags.df[,c("code", "parameter", "flag","run (1-j-q)", "yref,j")] %>% 
-  spread(code,flag)
-ft$`run (1-j-q)` <- round(ft$`run (1-j-q)`, digits = 0)
-ft$`yref,j` <- round(ft$`yref,j`, digits = 2)
-ft <- flextable(ft)
-ft <- fontsize(ft, size = 14, part = "all")
 
-# 
-# ft <- ISO13528_flags.df[c("code", "parameter", "flag"),]
-# ft <- flextable(ft)
-# ft <- set_header_labels( ft, code )
-# ft <- border_remove( ft )
-# 
-# big_b <- fp_border(color="gray70", width = 3)
-# std_b <- fp_border(color="orange", style = "dashed")
-# 
-# ft <- vline( ft, border = std_b, part = "all" )
-# ft <- vline_left( ft, border = big_b, part = "all" )
-# ft <- vline_right( ft, border = big_b, part = "all" )
-# ft <- hline( ft, border = std_b )
-# ft <- hline_bottom( ft, border = big_b )
-# ft <- hline_top( ft, border = big_b, part = "all" )
+ft <- flextable::regulartable(ft)
+ft <- colformat_num(
+   x = ft, col_keys = "run (1-j-q)",
+   digits = 0)
+ft <- colformat_num(
+   x = ft, col_keys = "yref,j",
+   digits = 2)
+# ft<-bg(ft, i = ~ A < 2, j = 4:12, bg = "green")
 # ft
 
+# 
+ft <- merge_v(ft, j = "parameter")
+# ft <- theme_vanilla(ft)
+# ft <- color(ft, color = "black", part = "header")
+# ft <- flextable::width(ft, width = .95) # set width of all columns 
+# ft <- fontsize(ft, part = "body", size = 10)
+# ft <- fontsize(ft, part = "header", size = 11)
+ft <- flextable::align( ft, align = "center", part = "all")
+# ft <-  bg(ft, bg = "#E4C994", part = "header")
+# ft  <- autofit(ft)
+# 
+# # breaks = c(0, 25, 50, 100
 
-# # row name
-# run <- with(ft, "run (1-j-q)" < 2 )
-# # column name
-# code <- c(code)
-# 
-# ft <- color(ft, i = run, j = code, color="red") 
-# 
-# 
-# ft <- color(ft, i = 1, j = ,c(("run")), color = "green")
 
-ft
+# doc <- read_docx() %>% 
+#   body_add_flextable(ft)
+print(ft)
+# 
 
 
 ```
@@ -764,27 +898,43 @@ pander::pander(Tab9)
 
 ## Create a connection with the Data Base
 InterDB.path <- file.path("E:\\BKUP\\Desktop\\LCE_Template.GAS-PHASE.accdb")
-# InterDB.path <- file.choose()
-# "E:\\BKUP\\Desktop\\LCE_Template.GAS-PHASE.accdb"
+# InterDB.path <- file.choose("E:\\BKUP\\Desktop\\LCE_Template.GAS-PHASE.accdb")
 InterDB <- RODBC::odbcConnectAccess2007(InterDB.path)
  ## Import the table/query
 
-assigned_values.df <- sqlFetch(InterDB, "Assigned values")[,c("run", "MinOfunit", "yref,j", "_x*", "p")]
+assigned_values.df <- sqlFetch(InterDB, "Assigned values")[,c("run", "MinOfunit", "yref,j", "u_yrefj", "Uyrefj", "_x*", "_s*", "p")]
 
 # disconnect
 close(InterDB)
 
 assigned_values.df <- as.data.frame(assigned_values.df)
-assigned_values.df$start.time
+# assigned_values.df$start.time
+assigned_values.df <- assigned_values.df[order(assigned_values.df$run),]
+assigned_values.df <- as.data.frame(assigned_values.df)
+
+# ht <- huxtable::huxtable(assigned_values.df)
+
+# ft <- theme_vanilla(ft)
+
+
+ft <- flextable::regulartable(assigned_values.df)
 ft <- regulartable(assigned_values.df)
 ft <- theme_vanilla(ft)
 ft <- color(ft, color = "black", part = "header")
-ft <- width(ft, width = .85) # set width of all columns to .75 in
+ft <- flextable::width(ft, width = .95) # set width of all columns 
 ft <- fontsize(ft, part = "body", size = 10)
-ft <- fontsize(ft, part = "header", size = 13)
+ft <- fontsize(ft, part = "header", size = 11)
+ft <- flextable::align( ft, align = "center", part = "all")
+ft <-  bg(ft, bg = "#E4C994", part = "header")
+ft <- colformat_num(x = ft, col_keys = "_s*", digits = 2)
+ft <- colformat_num(x = ft, col_keys = "_x*", digits = 2)
+ft <- colformat_num(x = ft, col_keys = "_s*", digits = 2)
 ft  <- autofit(ft)
 ft
-
+# doc <- read_docx() %>% 
+# body_add_flextable(ft)
+# print(ft)
+# # print(doc, target="dummy.docx")
 
 ```
 
@@ -818,17 +968,21 @@ Table10 <- read_excel ("W:\\Intercomparisons\\development auto report R\\ILC Tab
 
 Table10 <- as.data.frame(Table10)
 
+ft <- flextable::regulartable(Table10)
 ft <- regulartable(Table10)
 ft <- theme_vanilla(ft)
 ft <- color(ft, color = "black", part = "header")
-ft <- width(ft, width = .95) # set width of all columns
+ft <- flextable::width(ft, width = .95) # set width of all columns 
 ft <- fontsize(ft, part = "body", size = 10)
 ft <- fontsize(ft, part = "header", size = 11)
-ft <- align( ft, align = "center", part = "all")
+ft <- flextable::align( ft, align = "center", part = "all")
 ft <-  bg(ft, bg = "#E4C994", part = "header")
-ft <- autofit(ft)
+ft  <- autofit(ft)
 ft
-
+# print(ft)
+# doc <- read_docx()
+# doc <- body_add_flextable(doc, value = ft)
+# print(doc)
 ```
 
 As in previous ILC, the adopted criteria for high concentrations were the standard deviations for proficiency assessment, deriving from the European Standards’ uncertainty requirements.  
@@ -851,10 +1005,10 @@ Table11 <- as.data.frame(Table11)
 ft <- regulartable(Table11)
 ft <- theme_vanilla(ft)
 ft <- color(ft, color = "black", part = "header")
-ft <- width(ft, width = .95) # set width of all columns 
+ft <- flextable::width(ft, width = .95) # set width of all columns 
 ft <- fontsize(ft, part = "body", size = 10)
 ft <- fontsize(ft, part = "header", size = 11)
-ft <- align( ft, align = "center", part = "all")
+ft <- flextable::align( ft, align = "center", part = "all")
 ft <-  bg(ft, bg = "#E4C994", part = "header")
 ft  <- autofit(ft)
 ft
@@ -926,12 +1080,12 @@ The assigned value is indicated on the graphs with the red line and the individu
 
 ## Reported values for SO2
 
-```{r  echo = FALSE, warning = FALSE, cache = FALSE, out.width = "70%", results = 'asis', message = FALSE, comment=FALSE}
+```{r, fig.height=10, fig.width=25, echo = FALSE, warning = FALSE, cache = FALSE, out.width = "90%", results = 'asis', message = FALSE, comment=FALSE}
 
 ## Create a connection with the Data Base
 InterDB.path <- file.path("E:\\BKUP\\Desktop\\LCE_Template.GAS-PHASE.accdb")
 # InterDB.path <- file.choose()
-# "E:\\BKUP\\Desktop\\LCE_Template.GAS-PHASE.accdb"
+
 InterDB <- RODBC::odbcConnectAccess2007(InterDB.path, uid = "", pwd = "")
 
  ## Import the table/query
@@ -965,8 +1119,12 @@ for (i in unique(Measured_Data.df$parameter)) {
     
   # Caption
   fig.nb <- fig.nb + 1
-  Caption <-  paste0("Figure ", fig.nb,":  Reported values")
+  Caption <-  paste0("Figure ", fig.nb,":  Reported values of ",i," concentration ",j," ")
   print(Caption, quote = F)
+  
+  
+  ########################## PLOT ################################# 
+  
   
   filtered_data <- Measured_Data.df %>% 
     filter(`run (1-j-q)` == j,
@@ -979,41 +1137,184 @@ for (i in unique(Measured_Data.df$parameter)) {
             ref  = round(mean(`yref,j`, na.rm = T),digits = 2),
             unit_yijk = unique(unit))
 
-  
-  fig <- ggplot(filtered_data , aes(x="", y = mean_yijk, fill=code)) + 
+    fig <- ggplot(filtered_data , aes(x="", y = mean_yijk, fill=code)) + 
   theme_bw() +
    geom_point()  +
-   geom_errorbar(filtered_data, mapping = aes(x="", ymin = mean_yijk-mean_Uyij , ymax=mean_yijk+mean_Uyij),
-                 na.rm=TRUE, position="dodge", width=0.5, size=0.5,) +
-  labs(title = paste0("parameter ", i, "; conc level: ", j), x = "", y = paste0(i," ", unique(filtered_data$unit_yijk))) +
+   geom_errorbar(filtered_data, mapping = aes(x="",
+                ymin = mean_yijk-mean_Uyij , 
+                ymax=mean_yijk+mean_Uyij),
+                na.rm=TRUE, 
+                position="dodge", 
+                width=0.3, # width end of error bar
+                size=1.0,) +# width line error bar
+  labs(title = paste0("Parameter ", i, " conc level: ", j), x = "", y = paste0(i," ", unique(filtered_data$unit_yijk))) +
   facet_grid(. ~ filtered_data$code) +
-  geom_text_repel( aes(label = filtered_data$mean_yijk), size = 3, show.legend = FALSE) +
-  geom_hline(aes(yintercept = filtered_data[filtered_data$code == "G" , ]$ref ),  col = "red", lty = 1) +
+  geom_text_repel( aes(label = filtered_data$mean_yijk), size = 12, show.legend = FALSE) +
+  geom_hline(aes(yintercept = filtered_data[filtered_data$code == "G" , ]$ref ),  col = "red", lty = 30) +
 
       # no legend
   guides(fill=FALSE) +   
-  theme(plot.title = element_text(lineheight=.8, face="bold", size = 15, hjust = 0.5)) 
- # print(fig)
+  # theme(plot.title = element_text(lineheight=1.1, face="bold", size = 35, hjust = 0.5) 
+          theme(
+plot.title = element_text(lineheight=10, color="red", size=30, face="bold", hjust = 0.5),
+axis.title.y = element_text(color="#993333", size=30, face="bold"))
+
+  print(fig)
   
-  
-  
-  ######################
-  #### TABLE ###########
-  ######################
-  
+ ########################## TABLE ################################# 
+ 
  Table <- Measured_Data.df %>% 
     filter(`run (1-j-q)` == j,
            parameter == i) %>%
-   select(code,
-          yijk) 
+   select(code, yijk) 
  
   # replace NA with "nr"
  Table[is.na(Table$yijk),  "yijk"] <- "nr"
- 
- Table$ID <- seq(1:nrow(Table))
-
+  Table$ID <- seq(1:nrow(Table))
  Table <- as.data.frame(Table)
-Table <- spread(Table, code , yijk)
+ Table <- spread(Table, code , yijk)
+
+
+# collapse all rows and remove NAs
+collapse_column <- function(data, col){
+  data[!is.na(data[,col]),col]
+}
+
+vals_yijk = sapply(2:ncol(Table) ,collapse_column, data=Table)
+if (!is.null(nrow(vals_yijk))) {
+  vals_yijk <- as.data.frame(vals_yijk)
+  } 
+else if (is.null(nrow(vals_yijk)))  {
+vals_yijk <- as.data.frame(t(vals_yijk))
+}# rename with code names
+names(vals_yijk) = names(Table[-1])
+
+#  run different to zero level (3 values)
+if (nrow(vals_yijk) > 1) {
+  stats <- Measured_Data.df %>% 
+    dplyr::filter(`run (1-j-q)` == j,
+           parameter == i) %>%
+   dplyr::select(code,
+          yijk,
+          Uyij,
+          u_yij) %>%
+   group_by(code) %>%
+   summarise(mean_yijk = round(mean(yijk,na.rm = T),digits = 2),
+             mean_sd   = round(sd(yijk,na.rm = T),digits = 2),
+             Uyij      = round(mean(Uyij,na.rm = T),digits = 2),
+             u_yij     = round(mean(u_yij,na.rm = T),digits = 2))
+
+  stats <- t(stats) 
+  stats <- as.data.frame(stats)
+colnames(stats) <- as.character(unlist(stats[1,]))
+# remove header (code name)
+stats = stats[-1, ]
+#rownames(stats) <- NULL
+
+Table <- rbind(vals_yijk,
+               stats)
+row.names(Table) <- c("xi, 1", "xi, 2", "xi, 3", "x_mean", "sd", "u(xi)", "U(xi)")
+values <- row.names(Table)
+rownames(Table) <- NULL
+Table <- cbind(values,Table)
+}
+
+#  run equal to zero level (1 value)
+else if (nrow(vals_yijk) == 1) {
+  stats <- Measured_Data.df %>% 
+    filter(`run (1-j-q)` == j,
+           parameter == i) %>%
+   select(code,
+          yijk,
+          Uyij,
+          u_yij) %>%
+   group_by(code) %>%
+   summarise(Uyij      = round(mean(Uyij,na.rm = T),digits = 2),
+             u_yij     = round(mean(u_yij,na.rm = T),digits = 2))
+
+stats <- t(stats) 
+stats <- as.data.frame(stats)
+colnames(stats) <- as.character(unlist(stats[1,]))
+# remove header (code name)
+stats = stats[-1, ]
+row.names(stats) <- NULL
+
+Table <- rbind(vals_yijk,
+               stats)
+row.names(Table) <- c("xi, 1", "u(xi)", "U(xi)")
+values <- row.names(Table)
+row.names(Table) <- NULL
+Table <- cbind(values,Table)
+Table <- as.data.frame(Table) 
+}
+
+
+dt <- data.table::data.table(Table)
+print(dt)
+
+
+}
+}
+
+    
+ 
+
+
+```
+
+```{r, fig.height=10, fig.width=25, echo = FALSE, warning = FALSE, cache = FALSE, out.width = "90%", results = 'asis', message = FALSE, comment=FALSE}
+ 
+## Create a connection with the Data Base
+InterDB.path <- file.path("E:\\BKUP\\Desktop\\LCE_Template.GAS-PHASE.accdb")
+# InterDB.path <- file.choose()
+InterDB <- RODBC::odbcConnectAccess2007(InterDB.path, uid = "", pwd = "")
+ ## Import the table/query
+Measured_Data.df <- sqlFetch(InterDB, "Measured Data")[,c("yijk", "lab (1-i-p)", "run (1-j-q)", "step", "parameter", "unit")]
+names(Measured_Data.df)[names(Measured_Data.df) == "lab (1-i-p)"] <- 'acronim'
+Participants.df <- sqlFetch(InterDB, "labs")[,c("acronim", "full_name", "country_name", "code")]
+Participants.df <- as.data.frame(Participants.df)
+Uncertainty.df <- sqlFetch(InterDB, "uncertainties")[,c("lab", "u_yij", "Uyij", "run", "step", "parameter")]
+colnames(Uncertainty.df)[colnames(Uncertainty.df) == 'lab'] <- 'acronim'
+Assigned_value.df <- sqlFetch(InterDB, "Assigned values")[,c("yref,j", "Uyrefj",  "step", "parameter", "_x*", "_s*", "lab (1-i-p)")]
+names(Assigned_value.df)[names(Assigned_value.df) == "lab (1-i-p)"] <- 'acronim'
+
+Measured_Data.df <- Measured_Data.df %>%
+  left_join(Participants.df, by = "acronim")
+Measured_Data.df <- Measured_Data.df %>%
+  left_join(Uncertainty.df, by = c("acronim", "parameter", "step"))
+
+Measured_Data.df <- Measured_Data.df %>%
+  left_join(Assigned_value.df, by = c("acronim", "parameter", "step"))
+
+# disconnect
+close(InterDB)
+
+Measured_Data.df$`run (1-j-q)` <- as.factor(Measured_Data.df$`run (1-j-q)`)
+
+fig.nb <- 0
+
+for (i in unique(Measured_Data.df$parameter)) {
+  for (j in unique((Measured_Data.df[Measured_Data.df$parameter == i , ])$`run (1-j-q)`)) {
+    
+  # Caption
+  fig.nb <- fig.nb + 1
+  Caption <-  paste0("Figure ", fig.nb,":  Reported values of ",i," concentration ",j," ")
+  print(Caption, quote = F)
+  
+ 
+########################## TABLE ################################# 
+
+ 
+ Table <- Measured_Data.df %>% 
+    filter(`run (1-j-q)` == j,
+           parameter == i) %>%
+   select(code, yijk) 
+ 
+  # replace NA with "nr"
+ Table[is.na(Table$yijk),  "yijk"] <- "nr"
+  Table$ID <- seq(1:nrow(Table))
+ Table <- as.data.frame(Table)
+ Table <- spread(Table, code , yijk)
 
 
 # collapse all rows and remove NAs
@@ -1029,12 +1330,12 @@ vals_yijk <- as.data.frame(t(vals_yijk))
 }# rename with code names
 names(vals_yijk) = names(Table[-1])
 
- 
+#  run different to zero level (3 values)
 if (nrow(vals_yijk) > 1) {
   stats <- Measured_Data.df %>% 
-    filter(`run (1-j-q)` == j,
+    dplyr::filter(`run (1-j-q)` == j,
            parameter == i) %>%
-   select(code,
+   dplyr::select(code,
           yijk,
           Uyij,
           u_yij) %>%
@@ -1050,16 +1351,17 @@ if (nrow(vals_yijk) > 1) {
 colnames(stats) <- as.character(unlist(stats[1,]))
 # remove header (code name)
 stats = stats[-1, ]
-rownames(stats) <- NULL
+#rownames(stats) <- NULL
 
 Table <- rbind(vals_yijk,
                stats)
 row.names(Table) <- c("xi, 1", "xi, 2", "xi, 3", "x_mean", "sd", "u(xi)", "U(xi)")
-values <- rownames(Table)
+values <- row.names(Table)
 rownames(Table) <- NULL
 Table <- cbind(values,Table)
 
 
+#  run equal to zero level (1 value)
 
 } else if (nrow(vals_yijk) == 1) {
   stats <- Measured_Data.df %>% 
@@ -1079,38 +1381,33 @@ stats <- as.data.frame(stats)
 colnames(stats) <- as.character(unlist(stats[1,]))
 # remove header (code name)
 stats = stats[-1, ]
-rownames(stats) <- NULL
+row.names(stats) <- NULL
 
 Table <- rbind(vals_yijk,
                stats)
 row.names(Table) <- c("xi, 1", "u(xi)", "U(xi)")
-values <- rownames(Table)
-rownames(Table) <- NULL
+values <- row.names(Table)
+row.names(Table) <- NULL
 Table <- cbind(values,Table)
+
+Table <- as.data.frame(Table) 
 
 }
 
 
-
-# print(fig)
-tt <- ttheme_default(colhead=list(fg_params = list(parse=TRUE)))
-Table <- tableGrob(Table, rows = NULL, theme=tt)
-grid.arrange(fig, Table,as.table=TRUE) 
-
-
-
-
   }
+
 }
 
 
 
 ```
 
+
+
 Table 11: Reported values for SO2 run 0.
 
 \newline
-
 
 
 
@@ -1408,22 +1705,20 @@ The repeatability standard deviation was evaluated with (pj *(3-1)) degrees of f
 
 Table 46: Critical values of t used in the repeatability (r) and reproducibility (R) evaluation.
 
-```{r}
 
-```
 
 The repeatability (r) and reproducibility (R) limits of measurement methods are presented from Table 47 to Table 51 and from Figure 48 to Figure 52. Also reported is the ‘reproducibility from common criteria (R (from p))’ calculated by substituting sR in Equation 7 with a ‘standard deviation for proficiency assessment’ (see Table 4). Comparison between R and R (from p) serves to indicate that p is realistic ([13] under 6.3.1) or from the other point of view, that the general methodology implemented by NRLs is appropriate for p. 
 
 
 
-```{r, fig.height=9, fig.width=15, echo = FALSE, warning = FALSE, cache = FALSE, out.width = "70%", results = 'asis', message = FALSE, comment=FALSE}
+```{r, fig.height=8, fig.width=14, echo = FALSE, warning = FALSE, cache = FALSE, out.width = "70%", results = 'asis', message = FALSE, comment=FALSE}
 
 Fig45 <- figs(name="rRCO'", "The R and r of SO2 standard measurement method")
 pander::pander(Fig45)
 
 ```
 
-```{r, echo = FALSE, warning = FALSE, cache = FALSE, out.width = "90%", results = 'asis', message = FALSE, comment=FALSE}
+```{r, fig.height=7, fig.width=14, echo = FALSE, warning = FALSE, cache = FALSE, out.width = "80%", results = 'asis', message = FALSE, comment=FALSE}
 
 ## Create a connection with the Data Base
 InterDB.path <- file.path("E:\\BKUP\\Desktop\\LCE_Template.GAS-PHASE.accdb")
@@ -1448,17 +1743,19 @@ TabrR <- TabrR %>%
   
 filter(parameter == "SO2")
 
-ft <- regulartable(TabrR)
-ft <- theme_vanilla(ft)
-ft <- color(ft, color = "black", part = "header")
-ft <- width(ft, width = .95) # set width of all columns to .75 in
-ft <- fontsize(ft, part = "body", size = 8)
-ft <- fontsize(ft, part = "header", size = 9)
-ft <- align( ft, align = "center", part = "all")
-ft <- bg(ft, bg = "#E4C994", part = "header")
-ft  <- autofit(ft)
-ft
-print(ft)
+# ft <- flextable::regulartable(TabrR)
+# # ft <- regulartable(ft)
+# ft <- theme_vanilla(ft)
+# ft <- color(ft, color = "black", part = "header")
+# ft <- flextable::width(ft, width = .95) # set width of all columns 
+# ft <- fontsize(ft, part = "body", size = 10)
+# ft <- fontsize(ft, part = "header", size = 11)
+# ft <- flextable::align( ft, align = "center", part = "all")
+# ft <-  bg(ft, bg = "#E4C994", part = "header")
+# ft  <- autofit(ft)
+# ft
+  
+# print(ft)
 
 # #################################################################### GRAPH ###############################################
 
@@ -1479,20 +1776,35 @@ Tab.for.fig <- rbind(Tab.for.fig , added.table)
 # gas selection
 Tab.for.fig2 <- Tab.for.fig %>%
 filter(parameter == "SO2")
-    
+  
+ 
 fig <- ggplot(data = Tab.for.fig2,
   # aes(x= 2, y=r1, colour=rR)) +
   aes(x=`mj=yj(19)`, y=r1, colour=rR)) +
   geom_line(size = 1) +
   xlab("SO2 concentration (nmol/mol)") +
   ylab("r&R (nmol/mol)") +
-  theme_bw()
+  theme_bw(base_size = 25)
   # no legend
   guides(fill=FALSE) +
-  theme(plot.title = element_text(lineheight=.8, face="bold", size = 50, hjust = 0.5))
+  theme(plot.title = element_text(lineheight=.9, face="bold", size = 70, hjust = 0.5))
 print(fig)
 
-remove(added.table)
+
+
+
+
+ft <- flextable::regulartable(TabrR)
+# ft <- regulartable(ft)
+ft <- theme_vanilla(ft)
+ft <- color(ft, color = "black", part = "header")
+ft <- flextable::width(ft, width = .95) # set width of all columns 
+ft <- fontsize(ft, part = "body", size = 10)
+ft <- fontsize(ft, part = "header", size = 11)
+ft <- flextable::align( ft, align = "center", part = "all")
+ft <-  bg(ft, bg = "#E4C994", part = "header")
+ft  <- autofit(ft)
+ft
 
 
 ```
@@ -1504,7 +1816,7 @@ pander::pander(Fig46)
 
 ```
 
-```{r  echo = FALSE, warning = FALSE, cache = FALSE, out.width = "70%", results = 'asis', message = FALSE, comment=FALSE}
+```{r, fig.height=8, fig.width=14, echo = FALSE, warning = FALSE, cache = FALSE, out.width = "70%", results = 'asis', message = FALSE, comment=FALSE}
 
 ## Create a connection with the Data Base
 InterDB.path <- file.path("E:\\BKUP\\Desktop\\LCE_Template.GAS-PHASE.accdb")
@@ -1515,23 +1827,35 @@ rR.df <- sqlFetch(InterDB, "ISO 5725-2 (7_4)_r_R")[,c("run (1-j-q)", "parameter"
 
 # disconnect
 close(InterDB)
-# ######################
-# #### TABLE ###########
-# ######################
+# ########################################################## TABLE ###########################################################
 
 TabrR <- rR.df
-# filter(parameter = CO)
 
 # replace NA with "nr"
 TabrR [is.na(Table$r1),  "r1"] <- ""
 TabrR <- as.data.frame(TabrR)
 TabrR <- TabrR[order(TabrR$`mj=yj(19)`),]
 
-print(TabrR)
+# gas selection
+TabrR <- TabrR %>%
+  
+filter(parameter == "CO")
 
-# ######################
-# #### graph ###########
-# #####################
+# ft <- flextable::regulartable(TabrR)
+# # ft <- regulartable(ft)
+# ft <- theme_vanilla(ft)
+# ft <- color(ft, color = "black", part = "header")
+# ft <- flextable::width(ft, width = .95) # set width of all columns 
+# ft <- fontsize(ft, part = "body", size = 10)
+# ft <- fontsize(ft, part = "header", size = 11)
+# ft <- flextable::align( ft, align = "center", part = "all")
+# ft <-  bg(ft, bg = "#E4C994", part = "header")
+# ft  <- autofit(ft)
+# ft
+  
+# print(ft)
+
+# #################################################################### GRAPH ###############################################
 
 # Put together repeatability and Reproducibility
 Tab.for.fig <- TabrR[,c("mj=yj(19)", "r1", "parameter")]
@@ -1550,22 +1874,31 @@ Tab.for.fig <- rbind(Tab.for.fig , added.table)
 # gas selection
 Tab.for.fig2 <- Tab.for.fig %>%
 filter(parameter == "CO")
-    
+  
+ 
 fig <- ggplot(data = Tab.for.fig2,
   # aes(x= 2, y=r1, colour=rR)) +
   aes(x=`mj=yj(19)`, y=r1, colour=rR)) +
   geom_line(size = 1) +
-  theme_bw()
-  
-
-
+  xlab("CO concentration (nmol/mol)") +
+  ylab("r&R (nmol/mol)") +
+  theme_bw(base_size = 25)
   # no legend
-  # guides(fill=FALSE) +
-  theme(plot.title = element_text(lineheight=.8, face="bold", size = 15, hjust = 0.5))
+  guides(fill=FALSE) +
+  theme(plot.title = element_text(lineheight=.8, face="bold", size = 70, hjust = 0.5))
 print(fig)
 
-remove(added.table)
-
+ft <- flextable::regulartable(TabrR)
+# ft <- regulartable(ft)
+ft <- theme_vanilla(ft)
+ft <- color(ft, color = "black", part = "header")
+ft <- flextable::width(ft, width = .95) # set width of all columns 
+ft <- fontsize(ft, part = "body", size = 10)
+ft <- fontsize(ft, part = "header", size = 11)
+ft <- flextable::align( ft, align = "center", part = "all")
+ft <-  bg(ft, bg = "#E4C994", part = "header")
+ft  <- autofit(ft)
+ft
 
 ```
 
@@ -1578,7 +1911,7 @@ pander::pander(Fig47)
 
 ```
  
-```{r  echo = FALSE, warning = FALSE, cache = FALSE, out.width = "70%", results = 'asis', message = FALSE, comment=FALSE}
+```{r, fig.height=8, fig.width=14, echo = FALSE, warning = FALSE, cache = FALSE, out.width = "70%", results = 'asis', message = FALSE, comment=FALSE}
 
 ## Create a connection with the Data Base
 InterDB.path <- file.path("E:\\BKUP\\Desktop\\LCE_Template.GAS-PHASE.accdb")
@@ -1589,9 +1922,7 @@ rR.df <- sqlFetch(InterDB, "ISO 5725-2 (7_4)_r_R")[,c("run (1-j-q)", "parameter"
 
 # disconnect
 close(InterDB)
-# ######################
-# #### TABLE ###########
-# ######################
+# ########################################################## TABLE ###########################################################
 
 TabrR <- rR.df
 
@@ -1600,11 +1931,27 @@ TabrR [is.na(Table$r1),  "r1"] <- ""
 TabrR <- as.data.frame(TabrR)
 TabrR <- TabrR[order(TabrR$`mj=yj(19)`),]
 
-print(TabrR)
+# gas selection
+TabrR <- TabrR %>%
+  
+filter(parameter == "O3")
 
-# ######################
-# #### graph ###########
-# #####################
+
+# ft <- flextable::regulartable(TabrR)
+# # ft <- regulartable(ft)
+# ft <- theme_vanilla(ft)
+# ft <- color(ft, color = "black", part = "header")
+# ft <- flextable::width(ft, width = .95) # set width of all columns 
+# ft <- fontsize(ft, part = "body", size = 10)
+# ft <- fontsize(ft, part = "header", size = 11)
+# ft <- flextable::align( ft, align = "center", part = "all")
+# ft <-  bg(ft, bg = "#E4C994", part = "header")
+# ft  <- autofit(ft)
+# ft
+  
+# print(ft)
+
+# #################################################################### GRAPH ###############################################
 
 # Put together repeatability and Reproducibility
 Tab.for.fig <- TabrR[,c("mj=yj(19)", "r1", "parameter")]
@@ -1623,21 +1970,33 @@ Tab.for.fig <- rbind(Tab.for.fig , added.table)
 # gas selection
 Tab.for.fig2 <- Tab.for.fig %>%
 filter(parameter == "O3")
-    
+  
+ 
 fig <- ggplot(data = Tab.for.fig2,
   # aes(x= 2, y=r1, colour=rR)) +
   aes(x=`mj=yj(19)`, y=r1, colour=rR)) +
   geom_line(size = 1) +
-  theme_bw()
-  
-
-
+  xlab("O3 concentration (nmol/mol)") +
+  ylab("r&R (nmol/mol)") +
+  theme_bw(base_size = 25)
   # no legend
-  # guides(fill=FALSE) +
-  theme(plot.title = element_text(lineheight=.8, face="bold", size = 15, hjust = 0.5))
+  guides(fill=FALSE) +
+  theme(plot.title = element_text(lineheight=.8, face="bold", size = 70, hjust = 0.5))
 print(fig)
 
-remove(added.table)
+
+ft <- flextable::regulartable(TabrR)
+# ft <- regulartable(ft)
+ft <- theme_vanilla(ft)
+ft <- color(ft, color = "black", part = "header")
+ft <- flextable::width(ft, width = .95) # set width of all columns 
+ft <- fontsize(ft, part = "body", size = 10)
+ft <- fontsize(ft, part = "header", size = 11)
+ft <- flextable::align( ft, align = "center", part = "all")
+ft <-  bg(ft, bg = "#E4C994", part = "header")
+ft  <- autofit(ft)
+ft
+
 
 
 ```
@@ -1651,7 +2010,7 @@ pander::pander(Fig48)
 
 ```
 
-```{r  echo = FALSE, warning = FALSE, cache = FALSE, out.width = "70%", results = 'asis', message = FALSE, comment=FALSE}
+```{r, fig.height=8, fig.width=14, echo = FALSE, warning = FALSE, cache = FALSE, out.width = "70%", results = 'asis', message = FALSE, comment=FALSE}
 
 ## Create a connection with the Data Base
 InterDB.path <- file.path("E:\\BKUP\\Desktop\\LCE_Template.GAS-PHASE.accdb")
@@ -1662,9 +2021,7 @@ rR.df <- sqlFetch(InterDB, "ISO 5725-2 (7_4)_r_R")[,c("run (1-j-q)", "parameter"
 
 # disconnect
 close(InterDB)
-# ######################
-# #### TABLE ###########
-# ######################
+# ########################################################## TABLE ###########################################################
 
 TabrR <- rR.df
 
@@ -1673,11 +2030,27 @@ TabrR [is.na(Table$r1),  "r1"] <- ""
 TabrR <- as.data.frame(TabrR)
 TabrR <- TabrR[order(TabrR$`mj=yj(19)`),]
 
-print(TabrR)
+# gas selection
+TabrR <- TabrR %>%
+  
+filter(parameter == "NO")
 
-# ######################
-# #### graph ###########
-# #####################
+
+# ft <- flextable::regulartable(TabrR)
+# # ft <- regulartable(ft)
+# ft <- theme_vanilla(ft)
+# ft <- color(ft, color = "black", part = "header")
+# ft <- flextable::width(ft, width = .95) # set width of all columns 
+# ft <- fontsize(ft, part = "body", size = 10)
+# ft <- fontsize(ft, part = "header", size = 11)
+# ft <- flextable::align( ft, align = "center", part = "all")
+# ft <-  bg(ft, bg = "#E4C994", part = "header")
+# ft  <- autofit(ft)
+# ft
+  
+
+
+# #################################################################### GRAPH ###############################################
 
 # Put together repeatability and Reproducibility
 Tab.for.fig <- TabrR[,c("mj=yj(19)", "r1", "parameter")]
@@ -1696,28 +2069,39 @@ Tab.for.fig <- rbind(Tab.for.fig , added.table)
 # gas selection
 Tab.for.fig2 <- Tab.for.fig %>%
 filter(parameter == "NO")
-    
+  
+ 
 fig <- ggplot(data = Tab.for.fig2,
   # aes(x= 2, y=r1, colour=rR)) +
   aes(x=`mj=yj(19)`, y=r1, colour=rR)) +
   geom_line(size = 1) +
-  theme_bw()
-  
-
-
+  xlab("NO concentration (nmol/mol)") +
+  ylab("r&R (nmol/mol)") +
+  theme_bw(base_size = 25)
   # no legend
-  # guides(fill=FALSE) +
-  theme(plot.title = element_text(lineheight=.8, face="bold", size = 15, hjust = 0.5))
+  guides(fill=FALSE) +
+  theme(plot.title = element_text(lineheight=.8, face="bold", size = 70, hjust = 0.5))
 print(fig)
 
-remove(added.table)
+ft <- flextable::regulartable(TabrR)
+# ft <- regulartable(ft)
+ft <- theme_vanilla(ft)
+ft <- color(ft, color = "black", part = "header")
+ft <- flextable::width(ft, width = .95) # set width of all columns 
+ft <- fontsize(ft, part = "body", size = 10)
+ft <- fontsize(ft, part = "header", size = 11)
+ft <- flextable::align( ft, align = "center", part = "all")
+ft <-  bg(ft, bg = "#E4C994", part = "header")
+ft  <- autofit(ft)
+ft
+  
 
 
 ```
 
 
 
-```{r, fig.height=9, fig.width=15, echo = FALSE, warning = FALSE, cache = FALSE, out.width = "70%", results = 'asis', message = FALSE, comment=FALSE}
+```{r, fig.height=8, fig.width=14, echo = FALSE, warning = FALSE, cache = FALSE, out.width = "70%", results = 'asis', message = FALSE, comment=FALSE}
 
 Fig49 <- figs(name="rRCO'", "The R and r of NO2 standard measurement method")
 pander::pander(Fig49)
@@ -1726,7 +2110,7 @@ pander::pander(Fig49)
 
  
 
-```{r  echo = FALSE, warning = FALSE, cache = FALSE, out.width = "70%", results = 'asis', message = FALSE, comment=FALSE}
+```{r, fig.height=8, fig.width=14, echo = FALSE, warning = FALSE, cache = FALSE, out.width = "70%", results = 'asis', message = FALSE, comment=FALSE}
 
 ## Create a connection with the Data Base
 InterDB.path <- file.path("E:\\BKUP\\Desktop\\LCE_Template.GAS-PHASE.accdb")
@@ -1737,23 +2121,35 @@ rR.df <- sqlFetch(InterDB, "ISO 5725-2 (7_4)_r_R")[,c("run (1-j-q)", "parameter"
 
 # disconnect
 close(InterDB)
-# ######################
-# #### TABLE ###########
-# ######################
+# ########################################################## TABLE ###########################################################
 
 TabrR <- rR.df
-
 
 # replace NA with "nr"
 TabrR [is.na(Table$r1),  "r1"] <- ""
 TabrR <- as.data.frame(TabrR)
 TabrR <- TabrR[order(TabrR$`mj=yj(19)`),]
 
-print(TabrR)
+# gas selection
+TabrR <- TabrR %>%
+  
+filter(parameter == "NO2")
 
-# ######################
-# #### graph ###########
-# #####################
+# ft <- flextable::regulartable(TabrR)
+# # ft <- regulartable(ft)
+# ft <- theme_vanilla(ft)
+# ft <- color(ft, color = "black", part = "header")
+# ft <- flextable::width(ft, width = .95) # set width of all columns 
+# ft <- fontsize(ft, part = "body", size = 10)
+# ft <- fontsize(ft, part = "header", size = 11)
+# ft <- flextable::align( ft, align = "center", part = "all")
+# ft <-  bg(ft, bg = "#E4C994", part = "header")
+# ft  <- autofit(ft)
+# ft
+#   
+# print(ft)
+
+# #################################################################### GRAPH ###############################################
 
 # Put together repeatability and Reproducibility
 Tab.for.fig <- TabrR[,c("mj=yj(19)", "r1", "parameter")]
@@ -1772,21 +2168,34 @@ Tab.for.fig <- rbind(Tab.for.fig , added.table)
 # gas selection
 Tab.for.fig2 <- Tab.for.fig %>%
 filter(parameter == "NO2")
-    
+  
+ 
 fig <- ggplot(data = Tab.for.fig2,
   # aes(x= 2, y=r1, colour=rR)) +
   aes(x=`mj=yj(19)`, y=r1, colour=rR)) +
   geom_line(size = 1) +
-  theme_bw()
-  
-
-
+  xlab("NO2 concentration (nmol/mol)") +
+  ylab("r&R (nmol/mol)") +
+  theme_bw(base_size = 25)
   # no legend
-  # guides(fill=FALSE) +
-  theme(plot.title = element_text(lineheight=.8, face="bold", size = 15, hjust = 0.5))
+  guides(fill=FALSE) +
+  theme(plot.title = element_text(lineheight=.8, face="bold", size = 70, hjust = 0.5))
 print(fig)
 
-remove(added.table)
+
+ft <- flextable::regulartable(TabrR)
+# ft <- regulartable(ft)
+ft <- theme_vanilla(ft)
+ft <- color(ft, color = "black", part = "header")
+ft <- flextable::width(ft, width = .95) # set width of all columns 
+ft <- fontsize(ft, part = "body", size = 10)
+ft <- fontsize(ft, part = "header", size = 11)
+ft <- flextable::align( ft, align = "center", part = "all")
+ft <-  bg(ft, bg = "#E4C994", part = "header")
+ft  <- autofit(ft)
+ft
+
+
 
 
 ```
@@ -1801,10 +2210,99 @@ For that reason, a procedure for the detection of exceptional errors (error duri
 Laboratories showing some form of statistical inconsistency were requested to investigate the cause of discrepancies. 
 Laboratories were allowed to correct their results in case of identification of exceptional errors. Subsequently, data were considered definitive and z’-scores calculation was performed to estimate outliers. 
 Statistical outliers obtained at this stage are not considered as extraordinary errors but due to significant difference in participant’s standard operating procedure. 
-During this ILC, no statistical outlier was identified. 
+
 The precision of standardised measurement methods reported in Annex B are calculated using the database without outliers.
-According to z’-score calculation, results between |2| and |3| are considered stragglers and they deserve a specific check.  
+According to z’-score calculation, results between |2| and |3| are considered stragglers and they deserve a specific check.
+
+```{r, echo = FALSE, warning = FALSE, cache = FALSE, out.width = "70%", results = 'asis', message = FALSE, comment=FALSE}
+
+Fig2 <- figs(name="z'", "z' score summary")
+pander::pander(Fig2)
+
+```
+
+```{r, fig.height=16, fig.width=18, echo = FALSE, warning = FALSE, cache = FALSE, out.width = "70%", results = 'asis', message = FALSE, comment=FALSE}
+
+## Create a connection with the Data Base
+InterDB.path <- file.path("E:\\BKUP\\Desktop\\LCE_Template.GAS-PHASE.accdb")
+InterDB <- RODBC::odbcConnectAccess2007(InterDB.path)
+ 
+# Loading query
+ISO13528_7_6_z.df <- sqlFetch(InterDB, "ISO 13528 (7_6)_z")[,c("code", "parameter", "z","run", "run (1-j-q)", "z_2+", "z_2-", "z_3+", "z_3-")]
+
+# disconnect
+close(InterDB)
+
+Tick.X <- ISO13528_7_6_z.df[order(ISO13528_7_6_z.df$code),"run (1-j-q)"]
+fig2 <- ggplot(ISO13528_7_6_z.df, aes(x = run, y = z, fill = parameter)) + 
+  geom_bar(stat = "identity")  + 
+  labs(title = "", x = "", y = "") +
+  scale_x_discrete(labels = Tick.X) +
+  geom_hline(aes(yintercept = ISO13528_7_6_z.df$`z_2+`),  col = "green", lty = 1) +
+  geom_hline(aes(yintercept = ISO13528_7_6_z.df$`z_3+`),  col = "red"  , lty = 1) +
+  geom_hline(aes(yintercept = ISO13528_7_6_z.df$`z_2-`),  col = "green", lty = 1) +
+  geom_hline(aes(yintercept = ISO13528_7_6_z.df$`z_3-`),  col = "red"  , lty = 1) +
+  facet_wrap(~ code, ncol = 2, scales = 'free_y') + 
+  labs(title = "", x = "", y = "z-score") 
+fig2
+
+
+```
+
 During this ILC, neither statistical straggler nor outliers were identified.
+
+```{r, echo = FALSE, warning = FALSE, cache = FALSE, out.width = "90%", results = 'asis', message = FALSE, comment=FALSE}
+
+Tab5 <- tab(name="z' evaluation", "Questionable and unsatisfactory results according to z'-score")
+pander::pander(Tab5)
+
+```
+
+
+```{r, fig.height=10, fig.width=10, echo = FALSE, warning = FALSE, cache = FALSE, out.width = "70%", results = 'asis', message = FALSE, comment=FALSE}
+
+## Create a connection with the Data Base
+  InterDB.path <- file.path("E:\\BKUP\\Desktop\\LCE_Template.GAS-PHASE.accdb")
+  InterDB <- RODBC::odbcConnectAccess2007(InterDB.path)
+   
+  # Loading query
+  ISO13528_7_6_z.df <- sqlFetch(InterDB, "ISO 13528 (7_6)_z")[,c("code", "parameter", "z","run", "z_OK?")]
+  
+  # disconnect
+  close(InterDB)
+  
+  tb <- ISO13528_7_6_z.df 
+    quest <- filter(tb, z > 2 | z < -2)
+  
+
+ft <- flextable::regulartable(
+  head(quest),
+  cwidth = 1.3, cheight = 0.25,
+  col_keys = c("code", "run", "z", "z_OK?" ))
+
+ft <- set_header_labels( ft, `z_OK?` = "z'-score evaluation", code = "Code", run = "Run", z = "z'score value")
+ft <- bg(ft, bg = "#C90000", part = "header")
+# ft <- color(ft, color = "white", part = "header")
+
+
+# ft <- regulartable(ft)
+ft <- theme_vanilla(ft)
+ft <- color(ft, color = "black", part = "header")
+ft <- flextable::width(ft, width = 1.0) # set width of all columns 
+ft <- fontsize(ft, part = "body", size = 10)
+ft <- fontsize(ft, part = "header", size = 11)
+ft <- flextable::align( ft, align = "center", part = "all")
+ft <-  bg(ft, bg = "#E4C994", part = "header")
+ft  <- autofit(ft)
+ft
+
+
+
+# doc <- read_docx()
+# doc <- body_add_flextable(doc, value = ft)
+
+
+```
 
  
 ## Annex D: Confidentiality

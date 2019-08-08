@@ -1,0 +1,180 @@
+---
+title: "test"
+author: "maurizio"
+date: "29/07/2019"
+output: 
+---
+
+
+```{r, echo = FALSE, warning = FALSE, cache = FALSE, out.width = "70%", results = 'asis', message = FALSE, comment=FALSE, include=FALSE}
+
+library(readxl)
+library(dplyr)
+library(lubridate)
+library(tidyr)
+library(readr)
+library(stringr)
+library(tools)
+library(ggplot2)
+library(ggpmisc)
+library(xtable)
+library(pander)
+library(formattable)
+library(rmarkdown)
+library(knitr)
+library(kableExtra)
+library(forcats)
+library(bookdown)
+library(ggrepel)
+library(httr)
+library(scales)
+library(RODBC)
+library(mosaic)
+library(mosaicData)
+library(shiny)
+library(odbc)
+library(DBI)
+library(flextable)
+library(officer)
+library(gridExtra)
+library(RGraphics) 
+library(requireR)
+library(captioner)
+library(citr)
+library(cowplot)
+
+
+
+```
+
+
+EN NUMBER
+
+
+
+``````{r, fig.height=5, fig.width=10, echo = FALSE, warning = FALSE, cache = FALSE, out.width = "70%", results = 'asis', message = FALSE, comment=FALSE}
+
+## Create a connection with the Data Base
+InterDB.path <- file.path("E:\\BKUP\\Desktop\\LCE_Template.GAS-PHASE.accdb")
+InterDB <- RODBC::odbcConnectAccess2007(InterDB.path)
+ ## Import the table/query
+
+# Loading query
+ISO13528_7_6_z.df <- sqlFetch(InterDB, "ISO 13528 (7_6)_z")[,c("code", "parameter", "z","run", "run (1-j-q)", "z_2+", "z_2-", "z_3+", "z_3-")]
+
+# disconnect
+close(InterDB)
+
+
+for (i in unique(ISO13528_7_6_z.df$parameter)) {
+    # Caption
+  fig.nb <- grep(i, unique(ISO13528_7_6_z.df$parameter))
+  Caption <-  paste0("Figure ", fig.nb,": Z’-score evaluations of CO measurements 
+Scores are given for each participant and each tested concentration level (run). The assessment criteria are presented as z’=±2 (blue line) and z’=±3 (red line). They represent the limits for the questionable and unsatisfactory results")
+  pander::pander(Caption)
+  
+  # gas selection
+#ISO13528_7_6_z.df <- ISO13528_7_6_z.df %>%
+  
+# filter(code == "A")
+  
+  Tick.X <- unique(ISO13528_7_6_z.df[ISO13528_7_6_z.df$parameter == i, "run (1-j-q)"])
+  fig <- ggplot(ISO13528_7_6_z.df %>% 
+                  filter(parameter == i), 
+                aes(x = `run (1-j-q)`, y = z, fill = code)) +
+    theme_bw(base_size = 10) +
+    geom_col(colour= "black", stat = "identity") +
+    facet_grid(. ~ code) +
+    
+    ## axis.text for both axes
+    
+   labs(title = paste0("Parameter ", i), x = "", y = "z'-score") +
+    scale_y_continuous(limit = c(-3.5, +3.5)) +
+    scale_x_continuous(breaks = Tick.X) +
+    geom_hline(yintercept = 2,  col = "blue", lty = 1) +
+    geom_hline(yintercept = 3,  col = "red" , lty = 1) +
+    geom_hline(yintercept = -2,  col = "blue", lty = 1) +
+    geom_hline(yintercept = -3,  col = "red" , lty = 1) +
+    # ggtitle(expression(paste("title position)"))) + 
+    theme(plot.title = element_text(lineheight=.8, face="bold", size = 15, hjust = 0.5))
+  print(fig)
+  
+}
+
+
+```
+
+
+
+
+
+Z-SCORE
+
+
+```{r, echo = FALSE, warning = FALSE, cache = FALSE, out.width = "70%", results = 'asis', message = FALSE, comment=FALSE, include=FALSE}
+
+
+## Create a connection with the Data Base
+InterDB.path <- file.path("E:\\BKUP\\Desktop\\LCE_Template.GAS-PHASE.accdb")
+InterDB <- RODBC::odbcConnectAccess2007(InterDB.path)
+ ## Import the table/query
+
+# Loading query
+ISO13528_7_6_z.df <- sqlFetch(InterDB, "ISO 13528 (7_6)_z")[,c("code", "parameter", "z","run", "run (1-j-q)", "z_2+", "z_2-", "z_3+", "z_3-")]
+
+# disconnect
+close(InterDB)
+
+
+for (i in unique(ISO13528_7_6_z.df$code)) {
+    # Caption
+  fig.nb <- grep(i, unique(ISO13528_7_6_z.df$code))
+  Caption <-  paste0("Figure ", fig.nb,": Z’-score evaluations of CO measurements 
+Scores are given for each participant and each tested concentration level (run). The assessment criteria are presented as z’=±2 (blue line) and z’=±3 (red line). They represent the limits for the questionable and unsatisfactory results")
+  pander::pander(Caption)
+  
+  # gas selection
+#ISO13528_7_6_z.df <- ISO13528_7_6_z.df %>%
+  
+# filter(code == "A")
+  
+  Tick.X <- ISO13528_7_6_z.df[ISO13528_7_6_z.df$code == i,"run (1-j-q)"]
+  fig <- ggplot(ISO13528_7_6_z.df %>% 
+                  filter(code == i), 
+                aes(x = run, y = z, fill = parameter)) +
+    theme_bw(base_size = 20) +
+    geom_bar(colour= "black", stat = "identity") +
+ 
+    ## axis.text for both axes
+    
+   labs(title = paste0("Lab ", i), x = "", y = "z'-score") +
+    scale_y_continuous(limit = c(-3.5, +3.5)) +
+    scale_x_discrete(labels = Tick.X) +
+    geom_hline(yintercept = 2,  col = "blue", lty = 1) +
+    geom_hline(yintercept = 3,  col = "red" , lty = 1) +
+    geom_hline(yintercept = -2,  col = "blue", lty = 1) +
+    geom_hline(yintercept = -3,  col = "red" , lty = 1) +
+    # ggtitle(expression(paste("title position)"))) + 
+    theme(plot.title = element_text(lineheight=.8, face="bold", size = 15, hjust = 0.5))
+  print(fig)
+  
+}
+
+```
+
+
+
+```{r}
+library(officer)
+def_cell <- fp_cell(border = fp_border(color="#00FFFF"))
+def_par <- fp_par(text.align = "center")
+ft <- flextable(mtcars)
+ft <- style( ft, pr_c = def_cell, pr_p = def_par, part = "all")
+ft <- style(ft, ~ drat > 3.5, ~ vs + am + gear + carb,
+pr_t = fp_text(color="red", italic = TRUE) )
+
+ft <- flextable(mtcars)
+ft <- bg(ft, bg = "#DDDDDD", part = "header")
+ft
+
+```

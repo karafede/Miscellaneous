@@ -326,84 +326,78 @@ pander(Table)
 ```
 
 
-
-
-
-
-
-
-
 ```{r}
-## aggiungere tabella a chart
-
-##=========================================================
-# char1  <-   melt(chartjunk, id.vars = c("xx"))
-# g1 <-  ggplot(char1,  aes(xx, value, colour = variable )) + 
-#              geom_line() + geom_g1  point() 
-# g2 <- tableGrob(chartjunk)
-# 
-# grid.arrange(g1, g2, ncol=2)
-```
-
-
-
- 4.1 Participants
-
-```{r, echo = FALSE, warning = FALSE, cache = FALSE, results = 'asis', message = FALSE, comment=FALSE}
-
-# function for caption
-
-tab <- captioner::captioner(prefix ="Table")
-figs <- captioner::captioner (prefix = "Figure")
-
-# DB reading
+## Create a connection with the Data Base
 InterDB.path <- file.path("E:\\BKUP\\Desktop\\LCE_Template.GAS-PHASE.accdb")
-# InterDB.path <- file.choose()
 InterDB <- RODBC::odbcConnectAccess2007(InterDB.path, uid = "", pwd = "")
+
 ## Import the table/query
-Participants.df <- sqlFetch(InterDB, "labs")[,c("acronim", "full_name", "country_name", "code")]
-Participants.df <- as.data.frame(Participants.df)
+rR.df <- sqlFetch(InterDB, "ISO 5725-2 (7_4)_r_R")[,c("run (1-j-q)", "parameter", "mj=yj(19)", "r1", "R2", "R (%)", "R_AQUILA")]
+
 # disconnect
 close(InterDB)
+# ########################################################## TABLE ###########################################################
 
-tab(name="Participant", "List of participating organizations")
+TabrR <- rR.df
 
-# `Table 1` <- Participants.df
+# replace NA with "nr"
+TabrR [is.na(Table$r1),  "r1"] <- ""
+TabrR <- as.data.frame(TabrR)
+TabrR <- TabrR[order(TabrR$`mj=yj(19)`),]
 
-# `Table 1_cap` <- table_nums(name = "Table 1",
-                       # caption = "List of participating organizations")
+# gas selection
+TabrR <- TabrR %>%
+  
+filter(parameter == "SO2")
 
-```
-
-
-All participants were organisations dealing with the routine ambient air monitoring or institutions involved in environmental or public health protection. The national representatives came from `r Participants.df$country_name `.
-
-
-
-
-```{r, echo = FALSE, warning = FALSE, cache = FALSE, out.width = "80%", results = 'asis', message = FALSE, comment=FALSE}
-
-ft <- regulartable(Participants.df)
+ft <- regulartable(TabrR)
 ft <- theme_vanilla(ft)
-ft <- color(ft, color = "blue", part = "header")
-ft <- width(ft, width = .85) # set width of all columns to .75 in
-ft <- fontsize(ft, part = "body", size = 10)
-ft <- fontsize(ft, part = "header", size = 12)
-ft <- autofit(ft)
+ft <- color(ft, color = "black", part = "header")
+ft <- width(ft, width = .95) # set width of all columns to .75 in
+ft <- fontsize(ft, part = "body", size = 8)
+ft <- fontsize(ft, part = "header", size = 9)
+ft <- align( ft, align = "center", part = "all")
+ft <- bg(ft, bg = "#E4C994", part = "header")
+ft  <- autofit(ft)
 ft
+print(ft)
 
+# #################################################################### GRAPH ###############################################
 
+# Put together repeatability and Reproducibility
+Tab.for.fig <- TabrR[,c("mj=yj(19)", "r1", "parameter")]
+Tab.for.fig$rR <- "Repeatability r"
+added.table <- cbind(TabrR[,c("mj=yj(19)", "R2", "parameter")])
+names(added.table)[2] <- "r1"
+added.table$rR <- "Reproducibility R"
+Tab.for.fig <- rbind(Tab.for.fig , added.table)
+
+# add reference
+added.table <- cbind(TabrR[,c("mj=yj(19)","R_AQUILA", "parameter")])
+names(added.table)[2] <- "r1"
+added.table$rR <- "Reference"
+Tab.for.fig <- rbind(Tab.for.fig , added.table)
+
+# gas selection
+Tab.for.fig2 <- Tab.for.fig %>%
+filter(parameter == "SO2")
+  
+ 
+fig <- ggplot(data = Tab.for.fig2,
+  # aes(x= 2, y=r1, colour=rR)) +
+  aes(x=`mj=yj(19)`, y=r1, colour=rR)) +
+  geom_line(size = 1) +
+  xlab("SO2 concentration (nmol/mol)") +
+  ylab("r&R (nmol/mol)") +
+  theme_bw(base_size = 15)
+  # no legend
+  guides(fill=FALSE) +
+  theme(plot.title = element_text(lineheight=.8, face="bold", size = 50, hjust = 0.5))
+print(fig)
+
+remove(added.table)
 
 ```
-
-
-
-
-
-
-
-
-
 
 
 
