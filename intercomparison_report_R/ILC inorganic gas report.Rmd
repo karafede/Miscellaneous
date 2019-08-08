@@ -11,29 +11,22 @@ output:
     # fig_caption: true
   word_document: 
   reference_docx: template REPORT.docx
-  
+#   number_sections: true
+#  bookdown::word_document: default
  
   # toc: TRUE
   # toc_depth: 3
-  
-  # template: word_style_FK.docx
-  # pdf_document: template.pdf
-  # html_document: default
-  # number_sections: true
-  # bookdown::word_document: default
-  
+
 # highlight: tango  # specifies the syntax highlighting style
 
-# references: [ILC GAS PHASE TECH REPORT.bib]
+bibliography: [ILC_GAS_PHASE_TECH_REPORT.bib]
 # csl: sensors.csl
-# csl: nature.csl
-# csl: atmospheric-environment.csl
-# link-citations: yes
-# header-includes:
-#   - \usepackage{xcolor}
-#   - \usepackage{framed}
-  
-
+csl: nature.csl
+link-citations: yes
+header-includes:
+  - \usepackage{xcolor}
+  - \usepackage{framed}
+  - \pagenumbering{arabic}
 ...
 
 
@@ -99,6 +92,7 @@ In collaboration with: `r participant`.
 
 ## 2. Abstract
 
+Prova reference [@mukherjee_assessing_2017; @maurizio_kdjlkfdjgdkjlfdgdl_nodate]
 Within the harmonisation programme of Air Quality monitoring in Europe the European Reference Laboratory of Air Pollution (ERLAP) organises Inter-Laboratory Comparison Exercises (ILC). From the 13th to the 16th of May 2019, nine Laboratories of AQUILA (Network of European Air Quality Reference Laboratories) met for a laboratory comparison exercise in Ispra (IT) to evaluate their proficiency in the analysis of inorganic gaseous air pollutants (NO, NO2, SO2, CO and O3) covered by the European Air Quality Directive 2008/50 EC [1] and its recent amendments 2015/1480/EC [42].
 The proficiency evaluation, where each participant’s bias was compared to two criteria, provides information on the current situation and capabilities to the European Commission and can be used by participants in their quality control system.
 On the basis of adopted criteria, 95.6% of the results reported by AQUILA laboratories were good both in terms of measured values and reported uncertainties. The rest of the results had good measured values, but the reported uncertainties were either too high (1.3%) or too small (3.1%). Based on the z’-score evaluation, no values were found to be questionable or unsatisfactory. Comparability of results among AQUILA participants at the highest generated concentration levels is satisfactory for measurements of all pollutants.
@@ -167,7 +161,6 @@ pander::pander(Tab1)
 
 ```{r, echo = FALSE, warning = FALSE, cache = FALSE, out.width = "70%", results = 'asis', message = FALSE, comment=FALSE}
 
-
 # DB reading
 InterDB.path <- file.path("E:\\BKUP\\Desktop\\LCE_Template.GAS-PHASE.accdb")
 # InterDB.path <- file.choose()
@@ -175,32 +168,31 @@ InterDB <- RODBC::odbcConnectAccess2007(InterDB.path, uid = "", pwd = "")
 ## Import the table/query
 Participants.df <- sqlFetch(InterDB, "labs")[,c("acronim", "full_name", "country_name", "code")]
 Participants.df <- as.data.frame(Participants.df)
+
 # disconnect
 close(InterDB)
+library(flextable)
+library(officer)
 
-ft <- flextable::regulartable(Participants.df)
-
+ft <- flextable::flextable(Participants.df)
+ft <- set_header_labels(ft, acronim = "Acronym", full_name = "Laboratory", country_name = "Country", code = "Code" )
 ft <- theme_vanilla(ft)
 ft <- color(ft, color = "black", part = "header")
-ft <- flextable::width(ft, width = .8) # set width of all columns
+ft <- flextable::width(ft, width = .7) # set width of all columns
 ft <- fontsize(ft, part = "body", size = 10)
-ft <- fontsize(ft, part = "header", size = 12)
-
-ft <- flextable::align(ft, align = "center")
-ft <-  bg(ft, bg = "#E4C994", part = "header")
+ft <- fontsize(ft, part = "header", size = 10)
+ft <- flextable::align(ft, align = "center", part = "header")
+ft <- flextable::align(ft, align = "center", part = "body")
+ft <- bg(ft, bg = "#E4C994", part = "header")
 ft <- autofit(ft)
 ft
 
-# print(doc, target = "test.docx")
-
-
-
 ```
 
-
-
-
-
+\newline
+\newline
+\newline
+\newline
 \newline
 
 Table 2 reports the manufacturer and model of the instrumentation used by every participant during the inter-laboratory comparison exercise including those used in the calculation of the assigned values. 
@@ -233,7 +225,6 @@ instruments.df <- as.data.frame(instruments.df)
 # disconnect
 close(InterDB)
 
-
 ft <- flextable::flextable(instruments.df)
 ft <- merge_v(ft, j = "parameter")
 ft <- theme_vanilla(ft)
@@ -244,6 +235,7 @@ ft <- flextable::align( ft, align = "center", part = "all")
 ft <- bg(ft, bg = "#E4C994", part = "header")
 ft <- bg(ft, bg = "#C90000", part = "header")
 ft <- color(ft, color = "white", part = "header")
+ft <- set_header_labels(ft, code = "Code", parameter = "Pollutant", analyser = "Instruments")
 ft <- autofit(ft)
 ft
 
@@ -416,8 +408,6 @@ for (i in unique(ISO13528_7_6_z.df$parameter)) {
 Scores are given for each participant and each tested concentration level (run). The assessment criteria are presented as z’=±2 (blue line) and z’=±3 (red line). They represent the limits for the questionable and unsatisfactory results")
   pander::pander(Caption)
   
-  
-  
   Tick.X <- unique(ISO13528_7_6_z.df[ISO13528_7_6_z.df$parameter == i, "run (1-j-q)"])
   fig <- ggplot(ISO13528_7_6_z.df %>% 
                   filter(parameter == i), 
@@ -437,7 +427,7 @@ Scores are given for each participant and each tested concentration level (run).
     geom_hline(yintercept = -2,  col = "blue", lty = 1) +
     geom_hline(yintercept = -3,  col = "red" , lty = 1) +
     # ggtitle(expression(paste("title position)"))) + 
-    theme(plot.title = element_text(lineheight=1.8, face="bold", size = 30, hjust = 0.5))
+    theme(plot.title = element_text(lineheight=1.8, face="bold", size = 36, hjust = 0.5))
   print(fig)
   
 }
@@ -526,10 +516,11 @@ ft <- flextable::width(ft, width = 1.0) # set width of all columns
 ft <- fontsize(ft, part = "body", size = 10)
 ft <- fontsize(ft, part = "header", size = 11)
 ft <- flextable::align( ft, align = "center", part = "all")
-ft <-  bg(ft, bg = "#E4C994", part = "header")
+ft <- bg(ft, bg = "#E4C994", part = "header")
 ft <- colformat_num(
    x = ft, col_keys = "En",
    digits = 1)
+ft <- set_header_labels(ft, code = "Code", run = "Run", En = "En-score", `En_OK?` = "En evaluation")
 ft  <- autofit(ft)
 ft
   
@@ -538,10 +529,7 @@ ft
   # ft <- set_header_labels( ft, `En_OK?` = "En-score evaluation", code = "Code", run = "Run", En = "En score value")
   # ft <- bg(ft, bg = "#C90000", part = "header")
   # ft <- color(ft, color = "white", part = "header")
-  
-  
-  
-  # doc <- read_docx() %>% 
+    # doc <- read_docx() %>% 
   # body_add_flextable(ft)
   # print(doc, target="word_style_FK.docx")
 ```
@@ -556,7 +544,7 @@ Expanded uncertainty of bias for each run is presented as error bar. The results
 
 # Fig4 <- figs(name="En'", "En score pollutants")
 # pander::pander(Fig4)
-# En’-score evaluations of CO measurements Scores are given for each participant and each tested concentration level (run). The assessment criteria are presented as z’=±2 (blue line) and z’=±3 (red line). They represent the limits for the questionable and unsatisfactory results")
+# En’-score evaluations of CO measurements Scores are given for each participant and each tested concentration level (run).")
 # print(Caption, quote = F)
 
 ```
@@ -585,7 +573,6 @@ for (i in unique(ISO13528_7_5_En.df$parameter)) {
                   filter(parameter == i), 
                 aes(x = `run (1-j-q)`, y = bias, fill = parameter)) + 
 
-    
    geom_point(size=5) +
    geom_errorbar(aes(x=`run (1-j-q)`, 
                      ymax=bias + error_bar, 
@@ -607,9 +594,22 @@ for (i in unique(ISO13528_7_5_En.df$parameter)) {
   theme(plot.title = element_text(lineheight=.50, face="bold", size = 45, hjust = 0.5))
   
   Fig4 <- figs(name = paste0("Bias",i),caption = paste0(": Bias of participants's ",i))
-  pander::pander(Fig4)
-  pander::pander("En’-score evaluations of CO measurements Scores are given for each participant and each tested concentration level (run). The     assessment criteria are presented as z’=±2 (blue line) and z’=±3 (red line). They represent the limits for the questionable and     unsatisfactory results")
- browser()
+  
+  
+  library(pander)
+  pander(Fig4)
+  pander::pander("En’-score evaluations of CO measurements Scores are given for each participant and each tested concentration level (run).")
+
+Caption <-  paste0("Figure ", fig.nb,":  Reported values of ",i)
+print(Caption, quote = F)
+panderOptions("table.emphasize.rownames", FALSE) # remove row.names from the table
+panderOptions("table.split.table", Inf) # to avoid to split tables if rows are too long
+panderOptions('table.alignment.default', function(df) ifelse(sapply(df, is.numeric), 'right', 'left')) # right alignment for numeric, left otherwise
+panderOptions('knitr.auto.asis', FALSE)
+pander(Fig4, emphasize.strong.cols = 1, missing = "")
+
+  
+ # browser()
   print(Fig4)
   
 }
@@ -779,7 +779,19 @@ ft <- flextable::width(ft, width = .95) # set width of all columns
 ft <- fontsize(ft, part = "body", size = 10)
 ft <- fontsize(ft, part = "header", size = 11)
 ft <- flextable::align( ft, align = "center", part = "all")
-ft <-  bg(ft, bg = "#E4C994", part = "header")
+ft <- bg(ft, bg = "#E4C994", part = "header")
+ft <- colformat_num(x = ft, col_keys = "A", digits = 1)
+ft <- colformat_num(x = ft, col_keys = "B", digits = 1)
+ft <- colformat_num(x = ft, col_keys = "C", digits = 1)
+ft <- colformat_num(x = ft, col_keys = "D", digits = 1)
+ft <- colformat_num(x = ft, col_keys = "E", digits = 1)
+ft <- colformat_num(x = ft, col_keys = "F", digits = 1)
+ft <- colformat_num(x = ft, col_keys = "G", digits = 1)
+ft <- colformat_num(x = ft, col_keys = "H", digits = 1)
+ft <- add_header(ft, D = "Laboratory code", top = TRUE )
+# ft <- colformat_num(x = ft, col_keys = "I", digits = 1)
+# ft <- colformat_num(x = ft, col_keys = "K", digits = 1)
+
 ft  <- autofit(ft)
 ft
   
@@ -830,10 +842,8 @@ pander::pander(Tab8)
 # Create a connection with the Data Base
 InterDB.path <- file.path("E:\\BKUP\\Desktop\\LCE_Template.GAS-PHASE.accdb")
 InterDB <- RODBC::odbcConnectAccess2007(InterDB.path)
-
 # Loading query
 ISO13528_flags.df <- sqlFetch(InterDB, "ISO 13528 flags")[,c("code", "parameter", "flag", "run (1-j-q)", "yref,j")]
-
 # disconnect
 close(InterDB)
 
@@ -841,20 +851,14 @@ ft <- ISO13528_flags.df[,c("code", "parameter", "flag","run (1-j-q)", "yref,j")]
 spread(code, flag)
 ft <- as.data.frame(ft)
 
-
 ft <- flextable::regulartable(ft)
-ft <- colformat_num(
-   x = ft, col_keys = "run (1-j-q)",
-   digits = 0)
-ft <- colformat_num(
-   x = ft, col_keys = "yref,j",
-   digits = 2)
+ft <- colformat_num( x = ft, col_keys = "run (1-j-q)", digits = 0)
+ft <- colformat_num( x = ft, col_keys = "yref,j", digits = 2)
 # ft<-bg(ft, i = ~ A < 2, j = 4:12, bg = "green")
-# ft
 
-# 
 ft <- merge_v(ft, j = "parameter")
-# ft <- theme_vanilla(ft)
+ft <- theme_vanilla(ft)
+ft <- add_header(ft, D = "Categories", top = TRUE )
 # ft <- color(ft, color = "black", part = "header")
 # ft <- flextable::width(ft, width = .95) # set width of all columns 
 # ft <- fontsize(ft, part = "body", size = 10)
@@ -865,12 +869,7 @@ ft <- flextable::align( ft, align = "center", part = "all")
 # 
 # # breaks = c(0, 25, 50, 100
 
-
-# doc <- read_docx() %>% 
-#   body_add_flextable(ft)
 print(ft)
-# 
-
 
 ```
 
@@ -1019,8 +1018,6 @@ Comparability of results among AQUILA participants at the highest concentration 
 The relative reproducibility limits, at the highest studied concentration levels, are 4.6% for SO2, 4.4% for CO, 2.6% for O3, for NO 3.2% and for NO2 7.5% all within the objective derived from criteria imposed by the European Commission (\sigma p see Table 4).
 During this ILC the performance of all NRL was generally satisfactory. No values were identified as outliers.
 
-## 10.	References 
-
 ## Bibliography
 
 
@@ -1119,8 +1116,8 @@ for (i in unique(Measured_Data.df$parameter)) {
     
   # Caption
   fig.nb <- fig.nb + 1
-  Caption <-  paste0("Figure ", fig.nb,":  Reported values of ",i," concentration ",j," ")
-  print(Caption, quote = F)
+  # Caption <-  paste0("Figure ", fig.nb,":  Reported values of ",i," concentration ",j," ")
+  # print(Caption, quote = F)
   
   
   ########################## PLOT ################################# 
@@ -1159,7 +1156,7 @@ for (i in unique(Measured_Data.df$parameter)) {
 plot.title = element_text(lineheight=10, color="red", size=30, face="bold", hjust = 0.5),
 axis.title.y = element_text(color="#993333", size=30, face="bold"))
 
-  print(fig)
+ 
   
  ########################## TABLE ################################# 
  
@@ -1246,160 +1243,26 @@ values <- row.names(Table)
 row.names(Table) <- NULL
 Table <- cbind(values,Table)
 Table <- as.data.frame(Table) 
-}
-
-
-dt <- data.table::data.table(Table)
-print(dt)
-
-
-}
-}
-
-    
- 
-
-
-```
-
-```{r, fig.height=10, fig.width=25, echo = FALSE, warning = FALSE, cache = FALSE, out.width = "90%", results = 'asis', message = FALSE, comment=FALSE}
- 
-## Create a connection with the Data Base
-InterDB.path <- file.path("E:\\BKUP\\Desktop\\LCE_Template.GAS-PHASE.accdb")
-# InterDB.path <- file.choose()
-InterDB <- RODBC::odbcConnectAccess2007(InterDB.path, uid = "", pwd = "")
- ## Import the table/query
-Measured_Data.df <- sqlFetch(InterDB, "Measured Data")[,c("yijk", "lab (1-i-p)", "run (1-j-q)", "step", "parameter", "unit")]
-names(Measured_Data.df)[names(Measured_Data.df) == "lab (1-i-p)"] <- 'acronim'
-Participants.df <- sqlFetch(InterDB, "labs")[,c("acronim", "full_name", "country_name", "code")]
-Participants.df <- as.data.frame(Participants.df)
-Uncertainty.df <- sqlFetch(InterDB, "uncertainties")[,c("lab", "u_yij", "Uyij", "run", "step", "parameter")]
-colnames(Uncertainty.df)[colnames(Uncertainty.df) == 'lab'] <- 'acronim'
-Assigned_value.df <- sqlFetch(InterDB, "Assigned values")[,c("yref,j", "Uyrefj",  "step", "parameter", "_x*", "_s*", "lab (1-i-p)")]
-names(Assigned_value.df)[names(Assigned_value.df) == "lab (1-i-p)"] <- 'acronim'
-
-Measured_Data.df <- Measured_Data.df %>%
-  left_join(Participants.df, by = "acronim")
-Measured_Data.df <- Measured_Data.df %>%
-  left_join(Uncertainty.df, by = c("acronim", "parameter", "step"))
-
-Measured_Data.df <- Measured_Data.df %>%
-  left_join(Assigned_value.df, by = c("acronim", "parameter", "step"))
-
-# disconnect
-close(InterDB)
-
-Measured_Data.df$`run (1-j-q)` <- as.factor(Measured_Data.df$`run (1-j-q)`)
-
-fig.nb <- 0
-
-for (i in unique(Measured_Data.df$parameter)) {
-  for (j in unique((Measured_Data.df[Measured_Data.df$parameter == i , ])$`run (1-j-q)`)) {
-    
-  # Caption
-  fig.nb <- fig.nb + 1
-  Caption <-  paste0("Figure ", fig.nb,":  Reported values of ",i," concentration ",j," ")
-  print(Caption, quote = F)
-  
- 
-########################## TABLE ################################# 
-
- 
- Table <- Measured_Data.df %>% 
-    filter(`run (1-j-q)` == j,
-           parameter == i) %>%
-   select(code, yijk) 
- 
-  # replace NA with "nr"
- Table[is.na(Table$yijk),  "yijk"] <- "nr"
-  Table$ID <- seq(1:nrow(Table))
- Table <- as.data.frame(Table)
- Table <- spread(Table, code , yijk)
-
-
-# collapse all rows and remove NAs
-collapse_column <- function(data, col){
-  data[!is.na(data[,col]),col]
-}
-
-vals_yijk = sapply(2:ncol(Table) ,collapse_column, data=Table)
-if (!is.null(nrow(vals_yijk))) {
-  vals_yijk <- as.data.frame(vals_yijk)
-} else if (is.null(nrow(vals_yijk)))  {
-vals_yijk <- as.data.frame(t(vals_yijk))
-}# rename with code names
-names(vals_yijk) = names(Table[-1])
-
-#  run different to zero level (3 values)
-if (nrow(vals_yijk) > 1) {
-  stats <- Measured_Data.df %>% 
-    dplyr::filter(`run (1-j-q)` == j,
-           parameter == i) %>%
-   dplyr::select(code,
-          yijk,
-          Uyij,
-          u_yij) %>%
-   group_by(code) %>%
-   summarise(mean_yijk = round(mean(yijk,na.rm = T),digits = 2),
-             mean_sd   = round(sd(yijk,na.rm = T),digits = 2),
-             Uyij      = round(mean(Uyij,na.rm = T),digits = 2),
-             u_yij     = round(mean(u_yij,na.rm = T),digits = 2))
-
-  
-  stats <- t(stats) 
-  stats <- as.data.frame(stats)
-colnames(stats) <- as.character(unlist(stats[1,]))
-# remove header (code name)
-stats = stats[-1, ]
-#rownames(stats) <- NULL
-
-Table <- rbind(vals_yijk,
-               stats)
-row.names(Table) <- c("xi, 1", "xi, 2", "xi, 3", "x_mean", "sd", "u(xi)", "U(xi)")
-values <- row.names(Table)
-rownames(Table) <- NULL
-Table <- cbind(values,Table)
-
-
-#  run equal to zero level (1 value)
-
-} else if (nrow(vals_yijk) == 1) {
-  stats <- Measured_Data.df %>% 
-    filter(`run (1-j-q)` == j,
-           parameter == i) %>%
-   select(code,
-          yijk,
-          Uyij,
-          u_yij) %>%
-   group_by(code) %>%
-   summarise(Uyij      = round(mean(Uyij,na.rm = T),digits = 2),
-             u_yij     = round(mean(u_yij,na.rm = T),digits = 2))
-
-  
-stats <- t(stats) 
-stats <- as.data.frame(stats)
-colnames(stats) <- as.character(unlist(stats[1,]))
-# remove header (code name)
-stats = stats[-1, ]
-row.names(stats) <- NULL
-
-Table <- rbind(vals_yijk,
-               stats)
-row.names(Table) <- c("xi, 1", "u(xi)", "U(xi)")
-values <- row.names(Table)
-row.names(Table) <- NULL
-Table <- cbind(values,Table)
-
-Table <- as.data.frame(Table) 
 
 }
 
+library(pander)
+Caption <-  paste0("Figure ", fig.nb,":  Reported values of ",i," concentration ",j," ")
+print(Caption, quote = F)
+panderOptions("table.emphasize.rownames", FALSE) # remove row.names from the table
+panderOptions("table.split.table", Inf) # to avoid to split tables if rows are too long
+panderOptions('table.alignment.default', function(df) ifelse(sapply(df, is.numeric), 'right', 'left')) # right alignment for numeric, left otherwise
+panderOptions('knitr.auto.asis', FALSE)
+pander(Table, emphasize.strong.cols = 1, missing = "")
+
+
+ print(fig)
 
   }
-
+ 
 }
 
-
+    
 
 ```
 
